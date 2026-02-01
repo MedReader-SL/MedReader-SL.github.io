@@ -662,7 +662,16 @@
             MEDICINE_FUZZY_MATCH_THRESHOLD: 70,  // Minimum similarity % for medicine recognition
             SPELL_CHECK_THRESHOLD: 60,            // Minimum similarity % for spell suggestions
             MAX_OCR_ENGINES: 4,                   // Maximum number of OCR engines supported (Tesseract, OCR.space, Google, Azure)
-            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5 // Bonus % per additional agreeing engine
+            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5, // Bonus % per additional agreeing engine
+            
+            // OCR.space API configuration
+            OCRSPACE_BASE_CONFIDENCE: 85,         // Base confidence for OCR.space results
+            OCRSPACE_SUCCESS_CONFIDENCE: 90,      // Confidence for successful parse (exit code 1)
+            OCRSPACE_PARTIAL_CONFIDENCE: 75,      // Confidence for partial success (exit code 0)
+            OCRSPACE_TEXT_LENGTH_THRESHOLD: 50,   // Minimum text length for confidence boost
+            OCRSPACE_TEXT_LENGTH_BONUS: 5,        // Confidence bonus for meaningful text
+            OCRSPACE_MAX_CONFIDENCE: 95,          // Maximum confidence cap
+            OCRSPACE_JPEG_QUALITY: 0.95           // JPEG quality for image conversion
         };
         
         // ===========================
@@ -1101,8 +1110,8 @@
             }
             
             try {
-                // Convert canvas to base64
-                const base64Image = image.toDataURL('image/jpeg');
+                // Convert canvas to base64 with specified quality for OCR accuracy
+                const base64Image = image.toDataURL('image/jpeg', CONFIG.OCRSPACE_JPEG_QUALITY);
                 
                 // Map language codes to OCR.space language codes
                 const langMap = {
@@ -1161,20 +1170,19 @@
                     const result = data.ParsedResults[0];
                     const text = result.ParsedText || '';
                     
-                    // OCR.space provides confidence as TextOverlay.Lines[].Words[].WordText
-                    // We'll estimate confidence based on exit code and text length
-                    let confidence = 85; // Base confidence for OCR.space
+                    // Calculate confidence based on exit code and text length
+                    let confidence = CONFIG.OCRSPACE_BASE_CONFIDENCE;
                     
                     // Adjust confidence based on exit code
                     if (result.FileParseExitCode === 1) {
-                        confidence = 90; // Successful parse
+                        confidence = CONFIG.OCRSPACE_SUCCESS_CONFIDENCE;
                     } else if (result.FileParseExitCode === 0) {
-                        confidence = 75; // Partial success
+                        confidence = CONFIG.OCRSPACE_PARTIAL_CONFIDENCE;
                     }
                     
                     // Boost confidence if meaningful text was extracted
-                    if (text.length > 50) {
-                        confidence = Math.min(95, confidence + 5);
+                    if (text.length > CONFIG.OCRSPACE_TEXT_LENGTH_THRESHOLD) {
+                        confidence = Math.min(CONFIG.OCRSPACE_MAX_CONFIDENCE, confidence + CONFIG.OCRSPACE_TEXT_LENGTH_BONUS);
                     }
                     
                     return {
