@@ -6,6 +6,9 @@
     <title>MedReader-SL | Medical Prescription OCR</title>
     <meta name="description" content="Simple medical prescription OCR with AI-powered correction">
     
+    <!-- Content Security Policy for enhanced security -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com; font-src 'self' data:;">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
@@ -35,7 +38,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">MedReader-SL</h1>
-                        <p class="text-xs text-gray-600">AI-Enhanced Medical OCR</p>
+                        <p class="text-xs text-gray-600">GPT-4 Turbo Enhanced Medical OCR</p>
                     </div>
                 </div>
             </div>
@@ -86,7 +89,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                 </svg>
                 <p class="text-gray-700 font-semibold mb-2">Click to upload or drag and drop</p>
-                <p class="text-sm text-gray-500">Supports JPG, PNG (Max 10 files)</p>
+                <p class="text-sm text-gray-500">Supports JPG, PNG (Max 10 files, 10MB each)</p>
             </div>
 
             <div id="previewSection" class="hidden mt-4">
@@ -168,14 +171,24 @@
         // For production use, implement a backend proxy to securely handle API calls
         // The key provided by the user is embedded here as requested
         const OPENAI_API_KEY = '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';
-        const OPENAI_MODEL = 'gpt-3.5-turbo';
+        const OPENAI_MODEL = 'gpt-4-turbo'; // Using GPT-4 for enhanced accuracy
         const MIN_TEXT_LENGTH_FOR_AI = 5; // Minimum characters for AI correction
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
+        const OCR_TIMEOUT = 60000; // 60 seconds timeout for OCR
+        const API_TIMEOUT = 30000; // 30 seconds timeout for API calls
+        const MAX_API_RETRIES = 3; // Maximum retry attempts for API failures
+        const BLOB_CLEANUP_DELAY = 100; // Delay before revoking blob URL (browser compatibility)
+        
+        // AI System Prompt - Defines behavior of medical OCR correction
+        const AI_SYSTEM_PROMPT = 'You are a medical OCR correction assistant. Fix OCR errors in medical prescriptions, correct medication names, dosages, and medical terms. Preserve the original structure and format. Only fix obvious errors, do not add information. Return only the corrected text without any explanations.';
 
         // State
         const state = {
             files: [],
             currentTab: 0,
-            results: []
+            results: [],
+            isProcessing: false,
+            tesseractWorkers: [] // Track workers for proper cleanup
         };
 
         // DOM Elements
@@ -215,8 +228,37 @@
             dropZone.classList.remove('bg-blue-50');
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length > 0) {
-                imageInput.files = createFileList(files);
-                handleFiles();
+                // Store files in state and trigger validation
+                state.files = files.slice(0, 10);
+                
+                // Validate and process files
+                const validFiles = state.files.filter(f => {
+                    if (f.size > MAX_FILE_SIZE) {
+                        showToast(`${f.name} exceeds 10MB limit`, 'warning');
+                        return false;
+                    }
+                    if (f.size === 0) {
+                        showToast(`${f.name} is empty`, 'warning');
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (validFiles.length === 0) {
+                    showToast('No valid files to process', 'error');
+                    return;
+                }
+
+                state.files = validFiles;
+                
+                if (files.length > 10) {
+                    showToast('Maximum 10 files allowed, extra files ignored', 'warning');
+                }
+
+                displayPreviews();
+                processBtn.disabled = false;
+            } else {
+                showToast('Please drop image files only', 'warning');
             }
         });
 
@@ -230,7 +272,32 @@
             const files = Array.from(imageInput.files);
             if (files.length === 0) return;
 
-            state.files = files.slice(0, 10); // Max 10 files
+            // Validate file types
+            const validFiles = files.filter(f => f.type.startsWith('image/'));
+            if (validFiles.length !== files.length) {
+                showToast(`${files.length - validFiles.length} file(s) skipped (not images)`, 'warning');
+            }
+
+            // Validate file sizes
+            const oversizedFiles = validFiles.filter(f => f.size > MAX_FILE_SIZE);
+            if (oversizedFiles.length > 0) {
+                showToast(`${oversizedFiles.length} file(s) exceed 10MB limit`, 'error');
+                return;
+            }
+
+            // Check for empty files
+            const emptyFiles = validFiles.filter(f => f.size === 0);
+            if (emptyFiles.length > 0) {
+                showToast('Empty files detected, please select valid images', 'error');
+                return;
+            }
+
+            state.files = validFiles.slice(0, 10); // Max 10 files
+            
+            if (validFiles.length > 10) {
+                showToast('Maximum 10 files allowed, extra files ignored', 'warning');
+            }
+
             displayPreviews();
             processBtn.disabled = false;
         }
@@ -245,11 +312,28 @@
                 reader.onload = (e) => {
                     const div = document.createElement('div');
                     div.className = 'relative';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
-                        <div class="mt-1 text-xs text-gray-600 truncate">${file.name}</div>
-                    `;
+                    
+                    // Create elements safely without innerHTML
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-32 object-cover rounded-lg border-2 border-gray-300';
+                    
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'mt-1 text-xs text-gray-600 truncate';
+                    nameDiv.title = file.name; // Safe attribute assignment
+                    nameDiv.textContent = file.name; // Safe text content
+                    
+                    const sizeDiv = document.createElement('div');
+                    sizeDiv.className = 'text-xs text-gray-500';
+                    sizeDiv.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                    
+                    div.appendChild(img);
+                    div.appendChild(nameDiv);
+                    div.appendChild(sizeDiv);
                     imagePreview.appendChild(div);
+                };
+                reader.onerror = () => {
+                    showToast(`Failed to read file: ${file.name}`, 'error');
                 };
                 reader.readAsDataURL(file);
             });
@@ -257,62 +341,118 @@
 
         // Process images with OCR and AI
         async function processImages() {
+            if (state.isProcessing) {
+                showToast('Processing already in progress', 'warning');
+                return;
+            }
+
+            // Check if Tesseract is loaded
+            if (typeof Tesseract === 'undefined') {
+                showToast('OCR library not loaded. Please refresh the page.', 'error');
+                return;
+            }
+
+            state.isProcessing = true;
             processBtn.disabled = true;
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
             progressSection.classList.remove('hidden');
             resultsSection.classList.add('hidden');
             state.results = [];
 
+            // Clean up any existing workers
+            await cleanupWorkers();
+
             for (let i = 0; i < state.files.length; i++) {
                 const file = state.files[i];
-                const progress = ((i) / state.files.length) * 100;
+                const baseProgress = (i / state.files.length) * 100;
                 
-                updateProgress(progress, `Processing ${i + 1} of ${state.files.length}...`);
+                updateProgress(baseProgress, `Processing ${i + 1} of ${state.files.length}: OCR...`);
 
                 try {
                     // Run Tesseract OCR
+                    updateProgress(baseProgress + 10, `Processing ${i + 1} of ${state.files.length}: OCR...`);
                     const ocrResult = await runOCR(file);
                     
                     // Apply AI correction
+                    updateProgress(baseProgress + 50, `Processing ${i + 1} of ${state.files.length}: AI correction...`);
                     const correctedText = await correctWithAI(ocrResult);
                     
                     state.results.push({
                         filename: file.name,
                         text: correctedText,
-                        aiCorrected: true
+                        aiCorrected: correctedText !== ocrResult,
+                        isError: false
                     });
                 } catch (error) {
                     console.error('Error processing file:', error);
                     state.results.push({
                         filename: file.name,
-                        text: `Error processing image: ${error.message}`,
-                        aiCorrected: false
+                        text: `Error processing image: ${error.message}\n\nPlease try again or use a different image.`,
+                        aiCorrected: false,
+                        isError: true
                     });
+                    showToast(`Error processing ${file.name}`, 'error');
                 }
             }
 
             updateProgress(100, 'Complete!');
+            await cleanupWorkers();
             displayResults();
             
             setTimeout(() => {
                 progressSection.classList.add('hidden');
                 processBtn.disabled = false;
+                copyBtn.disabled = false;
+                downloadBtn.disabled = false;
+                state.isProcessing = false;
             }, 1000);
         }
 
-        // Run Tesseract OCR
+        // Run Tesseract OCR with timeout
         async function runOCR(file) {
             try {
-                const result = await Tesseract.recognize(file, 'eng', {
-                    logger: () => {} // Suppress logs
+                const worker = await Tesseract.createWorker('eng');
+                state.tesseractWorkers.push(worker);
+
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('OCR timeout - image too complex or large')), OCR_TIMEOUT);
                 });
-                return result.data.text;
+
+                const ocrPromise = worker.recognize(file);
+
+                const result = await Promise.race([ocrPromise, timeoutPromise]);
+                
+                if (!result || !result.data || !result.data.text) {
+                    throw new Error('OCR returned no text');
+                }
+
+                const extractedText = result.data.text.trim();
+                
+                if (extractedText.length === 0) {
+                    throw new Error('No text detected in image. Please ensure the image is clear and contains readable text.');
+                }
+
+                return extractedText;
             } catch (error) {
                 throw new Error(`OCR failed: ${error.message}`);
             }
         }
 
-        // AI correction with OpenAI
-        async function correctWithAI(text) {
+        // Cleanup Tesseract workers
+        async function cleanupWorkers() {
+            for (const worker of state.tesseractWorkers) {
+                try {
+                    await worker.terminate();
+                } catch (error) {
+                    console.error('Error terminating worker:', error);
+                }
+            }
+            state.tesseractWorkers = [];
+        }
+
+        // AI correction with OpenAI (with retry and timeout)
+        async function correctWithAI(text, retryCount = 0) {
             if (!text || text.trim().length < MIN_TEXT_LENGTH_FOR_AI) {
                 if (text && text.trim().length > 0) {
                     console.log('Text too short for AI correction, using original text');
@@ -321,6 +461,9 @@
             }
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -331,36 +474,85 @@
                         model: OPENAI_MODEL,
                         messages: [{
                             role: 'system',
-                            content: 'You are a medical OCR correction assistant. Fix OCR errors in medical prescriptions, correct medication names, dosages, and medical terms. Preserve the original structure and format. Only fix obvious errors, do not add information.'
+                            content: AI_SYSTEM_PROMPT
                         }, {
                             role: 'user',
                             content: `Please correct any OCR errors in this medical prescription text:\n\n${text}`
                         }],
                         temperature: 0.3,
-                        max_tokens: 1000
-                    })
+                        max_tokens: 2000
+                    }),
+                    signal: controller.signal
                 });
 
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error?.message || 'API request failed');
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMessage = errorData.error?.message || `API error: ${response.status}`;
+                    
+                    // Retry on certain errors
+                    if (retryCount < MAX_API_RETRIES && (response.status === 429 || response.status >= 500)) {
+                        console.log(`Retrying AI correction (attempt ${retryCount + 1})...`);
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+                        return correctWithAI(text, retryCount + 1);
+                    }
+                    
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
-                return data.choices[0].message.content.trim();
+                
+                // Validate response structure
+                if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+                    throw new Error('Invalid API response structure');
+                }
+
+                const correctedText = data.choices[0].message.content.trim();
+                
+                // Validate corrected text is not empty
+                if (!correctedText || correctedText.length === 0) {
+                    console.warn('AI returned empty text, using original');
+                    return text;
+                }
+
+                return correctedText;
             } catch (error) {
                 console.error('AI correction failed:', error);
-                showToast('AI correction unavailable, using OCR text', 'warning');
+                
+                // Retry on network errors
+                if (retryCount < MAX_API_RETRIES && error.name === 'AbortError') {
+                    console.log(`Retrying AI correction after timeout (attempt ${retryCount + 1})...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                    return correctWithAI(text, retryCount + 1);
+                }
+                
+                if (retryCount === 0) {
+                    showToast('AI correction unavailable, using OCR text', 'warning');
+                } else {
+                    showToast('AI correction failed after retries, using OCR text', 'warning');
+                }
                 return text;
             }
         }
 
         // Display results
         function displayResults() {
+            if (!state.results || state.results.length === 0) {
+                showToast('No results to display', 'error');
+                return;
+            }
+
+            // Ensure currentTab is within bounds
+            if (state.currentTab >= state.results.length) {
+                state.currentTab = 0;
+            }
+
             resultsSection.classList.remove('hidden');
             
             // Show AI correction info if any result was AI corrected
-            if (state.results.some(r => r.aiCorrected)) {
+            const hasAICorrection = state.results.some(r => r.aiCorrected);
+            if (hasAICorrection) {
                 aiCorrectionInfo.classList.remove('hidden');
             } else {
                 aiCorrectionInfo.classList.add('hidden');
@@ -371,9 +563,16 @@
                 resultsTabs.innerHTML = '';
                 state.results.forEach((result, index) => {
                     const tab = document.createElement('button');
-                    tab.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${index === state.currentTab ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
-                    tab.textContent = `File ${index + 1}`;
-                    tab.onclick = () => switchTab(index);
+                    const isActive = index === state.currentTab;
+                    const errorClass = result.isError ? 'border-2 border-red-500' : '';
+                    tab.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${errorClass} ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+                    tab.textContent = `File ${index + 1}${result.isError ? ' ⚠️' : ''}`;
+                    tab.onclick = () => {
+                        state.currentTab = index;
+                        displayCurrentResult();
+                        // Update tab active states only
+                        updateTabStates();
+                    };
                     resultsTabs.appendChild(tab);
                 });
                 resultsTabs.classList.remove('hidden');
@@ -384,55 +583,122 @@
             displayCurrentResult();
         }
 
-        // Switch between result tabs
-        function switchTab(index) {
-            state.currentTab = index;
-            displayResults();
+        // Update tab visual states without re-rendering
+        function updateTabStates() {
+            const tabs = resultsTabs.querySelectorAll('button');
+            tabs.forEach((tab, index) => {
+                const isActive = index === state.currentTab;
+                const result = state.results[index];
+                const errorClass = result.isError ? 'border-2 border-red-500' : '';
+                tab.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${errorClass} ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+            });
         }
 
         // Display current result
         function displayCurrentResult() {
+            // Ensure currentTab is within bounds
+            if (state.currentTab >= state.results.length) {
+                state.currentTab = 0;
+            }
+
             const result = state.results[state.currentTab];
-            if (!result) return;
+            if (!result) {
+                extractedText.value = '';
+                wordCount.textContent = '0';
+                return;
+            }
 
             extractedText.value = result.text;
+            
+            // Add error styling if this is an error result
+            if (result.isError) {
+                extractedText.classList.add('border-red-500', 'bg-red-50');
+            } else {
+                extractedText.classList.remove('border-red-500', 'bg-red-50');
+            }
+
             const words = result.text.trim().split(/\s+/).filter(w => w.length > 0);
             wordCount.textContent = words.length;
         }
 
         // Copy to clipboard
         async function copyToClipboard() {
+            if (!state.results || state.results.length === 0 || !extractedText.value) {
+                showToast('No text to copy', 'warning');
+                return;
+            }
+
             try {
                 await navigator.clipboard.writeText(extractedText.value);
                 showToast('Text copied to clipboard!', 'success');
             } catch (error) {
-                showToast('Failed to copy text', 'error');
+                // Fallback method
+                try {
+                    extractedText.select();
+                    document.execCommand('copy');
+                    showToast('Text copied to clipboard!', 'success');
+                } catch (err) {
+                    showToast('Failed to copy text', 'error');
+                }
             }
         }
 
         // Download as text file
         function downloadText() {
+            if (!state.results || state.results.length === 0 || state.currentTab >= state.results.length) {
+                showToast('No text to download', 'warning');
+                return;
+            }
+
             const result = state.results[state.currentTab];
-            const blob = new Blob([result.text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${result.filename.replace(/\.[^.]+$/, '')}_extracted.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('Text downloaded!', 'success');
+            if (!result || !result.text) {
+                showToast('No text to download', 'warning');
+                return;
+            }
+
+            try {
+                const blob = new Blob([result.text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${result.filename.replace(/\.[^.]+$/, '')}_extracted.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Clean up blob URL after short delay for browser compatibility
+                setTimeout(() => URL.revokeObjectURL(url), BLOB_CLEANUP_DELAY);
+                
+                showToast('Text downloaded!', 'success');
+            } catch (error) {
+                showToast('Failed to download text', 'error');
+            }
         }
 
         // Clear all
-        function clearAll() {
+        async function clearAll() {
+            if (state.isProcessing) {
+                showToast('Cannot clear while processing', 'warning');
+                return;
+            }
+
+            // Clean up workers
+            await cleanupWorkers();
+
             state.files = [];
             state.results = [];
             state.currentTab = 0;
             imageInput.value = '';
             imagePreview.innerHTML = '';
+            extractedText.value = '';
+            extractedText.classList.remove('border-red-500', 'bg-red-50');
             previewSection.classList.add('hidden');
             resultsSection.classList.add('hidden');
             processBtn.disabled = true;
+            copyBtn.disabled = false;
+            downloadBtn.disabled = false;
+            
+            showToast('Cleared successfully', 'success');
         }
 
         // Update progress bar
@@ -451,7 +717,8 @@
             const icons = {
                 success: '<svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
                 error: '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
-                warning: '<svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>'
+                warning: '<svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                info: '<svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
             };
 
             toastIcon.innerHTML = icons[type] || icons.info;
@@ -461,13 +728,6 @@
             setTimeout(() => {
                 toast.classList.add('hidden');
             }, 3000);
-        }
-
-        // Helper function to create FileList
-        function createFileList(files) {
-            const dt = new DataTransfer();
-            files.forEach(file => dt.items.add(file));
-            return dt.files;
         }
     </script>
 
