@@ -113,7 +113,17 @@
                         </svg>
                         Requires Verification
                     </span>
-                    <button id="apiConfigBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors">
+                    <button id="infoBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="About">
+                        <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </button>
+                    <button id="privacyBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="Privacy">
+                        <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </button>
+                    <button id="apiConfigBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="API Settings">
                         <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -342,7 +352,15 @@
                 
                 <!-- Image Preview -->
                 <div id="previewSection" class="hidden glass-effect rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Image Analysis</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">Image Analysis</h2>
+                        <button id="removeImageBtn" class="remove-image-btn flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Remove Image
+                        </button>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -484,7 +502,23 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <!-- Word Count and Stats Display -->
+                    <div class="flex flex-wrap items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center space-x-4">
+                            <div id="wordCount" class="text-sm text-gray-600">
+                                <span class="font-semibold">Words:</span> <span id="wordCountValue">0</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-semibold">Characters:</span> <span id="charCountValue">0</span>
+                            </div>
+                        </div>
+                        <div id="statsCounter" class="text-sm text-gray-600">
+                            <span class="font-semibold">📊 Total Processed:</span> <span id="processedCountValue">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Primary Action Buttons -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                         <button id="verifyBtn" class="flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-all shadow-md">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -512,6 +546,50 @@
                             </svg>
                             New Scan
                         </button>
+                    </div>
+
+                    <!-- Secondary Action Buttons (Print, Share, Format, Clear) -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <button id="printBtn" class="flex items-center justify-center bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-all shadow-md text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            Print
+                        </button>
+                        
+                        <button id="shareBtn" class="flex items-center justify-center bg-indigo-500 text-white py-2 px-3 rounded-lg hover:bg-indigo-600 transition-all shadow-md text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            Share
+                        </button>
+                        
+                        <button id="formatBtn" class="flex items-center justify-center bg-orange-500 text-white py-2 px-3 rounded-lg hover:bg-orange-600 transition-all shadow-md text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                            </svg>
+                            Format
+                        </button>
+                        
+                        <button id="clearAllBtn" class="flex items-center justify-center bg-red-500 text-white py-2 px-3 rounded-lg hover:bg-red-600 transition-all shadow-md text-sm">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Clear All
+                        </button>
+                    </div>
+
+                    <!-- Text Formatting Options Dropdown -->
+                    <div id="formatOptions" class="hidden mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                        <h4 class="text-sm font-semibold text-orange-800 mb-2">Text Formatting Options</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="formatText('removeExtraSpaces')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Remove Extra Spaces</button>
+                            <button onclick="formatText('uppercase')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">UPPERCASE</button>
+                            <button onclick="formatText('lowercase')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">lowercase</button>
+                            <button onclick="formatText('capitalize')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Capitalize Words</button>
+                            <button onclick="formatText('removeLineBreaks')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Remove Line Breaks</button>
+                            <button onclick="formatText('reset')" class="px-3 py-1 text-xs bg-red-100 border border-red-300 rounded hover:bg-red-200 transition-colors text-red-700">Reset to Original</button>
+                        </div>
                     </div>
 
                     <!-- Audit Trail -->
@@ -702,6 +780,121 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="glass-effect rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">About MedReader-SL</h2>
+                <button id="closeInfoModal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-medical-600 mb-2">🏥 What is MedReader-SL?</h3>
+                    <p class="text-gray-700">MedReader-SL is an AI-enhanced medical prescription OCR system that converts prescription images to readable text with 95-99% accuracy. It uses multi-engine OCR processing and intelligent medical term correction.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-medical-600 mb-2">✨ Key Features</h3>
+                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
+                        <li>Multi-engine OCR (Tesseract, Google Vision, Azure, OCR.space)</li>
+                        <li>AI-powered medical term correction with OpenAI</li>
+                        <li>150+ medication database with fuzzy matching</li>
+                        <li>18 language support</li>
+                        <li>Dosage and frequency extraction</li>
+                        <li>Professional verification workflow</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-medical-600 mb-2">📊 Accuracy Rates</h3>
+                    <ul class="text-gray-700 space-y-1">
+                        <li>• AI-enhanced prescriptions: <strong>95-99%</strong></li>
+                        <li>• Multi-engine consensus: <strong>95-98%</strong></li>
+                        <li>• Printed prescriptions: <strong>90-95%</strong></li>
+                        <li>• Handwritten prescriptions: <strong>60-80%</strong></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-medical-600 mb-2">📋 Version Information</h3>
+                    <p class="text-gray-700">Version: <strong>1.2.0</strong></p>
+                    <p class="text-gray-700">Last Updated: <strong>2026-02-01</strong></p>
+                </div>
+            </div>
+            
+            <button id="closeInfoModalBtn" class="w-full mt-6 bg-medical-500 text-white py-3 rounded-lg font-semibold hover:bg-medical-600 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div id="privacyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="glass-effect rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">🔒 Privacy & Security</h2>
+                <button id="closePrivacyModal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-green-800 mb-2">✅ 100% Local Processing (Default)</h3>
+                    <p class="text-green-700">When using Tesseract.js (default), all processing happens entirely in your browser:</p>
+                    <ul class="text-green-700 mt-2 space-y-1 list-disc list-inside">
+                        <li>Images are NEVER uploaded to any server</li>
+                        <li>No data is stored in the cloud</li>
+                        <li>No network transmission of your medical data</li>
+                        <li>Data is deleted when you close/refresh browser</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Cloud API Usage (Optional)</h3>
+                    <p class="text-yellow-700">If you configure cloud APIs (Google Vision, Azure, OCR.space, OpenAI):</p>
+                    <ul class="text-yellow-700 mt-2 space-y-1 list-disc list-inside">
+                        <li>Images/text ARE sent to external servers for processing</li>
+                        <li>Subject to each provider's privacy policy</li>
+                        <li>Ensure compliance with HIPAA, GDPR, or local regulations</li>
+                        <li>API keys are stored locally in your browser only</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">📦 Data Storage</h3>
+                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
+                        <li>Uses browser localStorage only for API keys and settings</li>
+                        <li>Statistics counter stored locally</li>
+                        <li>No personal or medical information is permanently stored</li>
+                        <li>No cookies or tracking</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">🛡️ Security Best Practices</h3>
+                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
+                        <li>Always verify OCR results with a healthcare professional</li>
+                        <li>Use HTTPS when hosting this application</li>
+                        <li>Keep API keys confidential</li>
+                        <li>Clear browser data after sensitive sessions</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button id="closePrivacyModalBtn" class="w-full mt-6 bg-medical-500 text-white py-3 rounded-lg font-semibold hover:bg-medical-600 transition-colors">
+                I Understand
+            </button>
         </div>
     </div>
 
@@ -1899,6 +2092,15 @@ Return ONLY the corrected prescription text without any additional explanations,
             
             addAuditEntry('OCR completed', `${state.ocrResults.length} engines, ${consensus.confidence}% confidence`);
             
+            // Increment stats counter
+            incrementProcessedCount();
+            
+            // Store original text for formatting reset
+            originalExtractedText = consensus.text;
+            
+            // Update word count
+            updateWordCount();
+            
             setTimeout(() => {
                 document.getElementById('processingSection').classList.add('hidden');
                 document.getElementById('resultsSection').classList.remove('hidden');
@@ -2225,6 +2427,283 @@ Return ONLY the corrected prescription text without any additional explanations,
             document.getElementById('openaiStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
             document.getElementById('openaiStatus').textContent = state.settings.enableAiCorrection ? 'Enabled' : 'Configured';
         }
+
+        // ===========================
+        // NEW FEATURE: Statistics Counter
+        // ===========================
+        
+        // Initialize stats counter from localStorage
+        let processedCount = parseInt(localStorage.getItem('processedCount')) || 0;
+        document.getElementById('processedCountValue').textContent = processedCount;
+        
+        function incrementProcessedCount() {
+            processedCount++;
+            localStorage.setItem('processedCount', processedCount);
+            document.getElementById('processedCountValue').textContent = processedCount;
+        }
+        
+        // ===========================
+        // NEW FEATURE: Word Count Display
+        // ===========================
+        
+        function updateWordCount() {
+            const text = document.getElementById('extractedText').value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const chars = text.length;
+            document.getElementById('wordCountValue').textContent = words;
+            document.getElementById('charCountValue').textContent = chars;
+        }
+        
+        // Update word count when text changes
+        document.getElementById('extractedText').addEventListener('input', updateWordCount);
+        
+        // ===========================
+        // NEW FEATURE: Print Function
+        // ===========================
+        
+        document.getElementById('printBtn').addEventListener('click', () => {
+            const text = document.getElementById('extractedText').value;
+            if (!text.trim()) {
+                showToast('No text to print', 'warning');
+                return;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>MedReader-SL - Prescription Text</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                        h1 { color: #0ea5e9; font-size: 24px; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px; }
+                        .content { white-space: pre-wrap; font-size: 14px; margin: 20px 0; }
+                        .footer { font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 30px; }
+                        .warning { background: #fff7ed; border: 1px solid #f97316; padding: 10px; border-radius: 4px; margin: 10px 0; }
+                        @media print { .no-print { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>MedReader-SL - Extracted Prescription Text</h1>
+                    <div class="warning">⚠️ This text must be verified by a healthcare professional before use.</div>
+                    <div class="content">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')}</div>
+                    <div class="footer">
+                        Generated by MedReader-SL v1.2<br>
+                        Date: ${new Date().toLocaleString()}<br>
+                        <strong>IMPORTANT: Always verify with original prescription</strong>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+            showToast('Print dialog opened', 'success');
+            addAuditEntry('Print', 'Printed prescription text');
+        });
+        
+        // ===========================
+        // NEW FEATURE: Share Function
+        // ===========================
+        
+        document.getElementById('shareBtn').addEventListener('click', async () => {
+            const text = document.getElementById('extractedText').value;
+            if (!text.trim()) {
+                showToast('No text to share', 'warning');
+                return;
+            }
+            
+            const shareData = {
+                title: 'MedReader-SL - Prescription Text',
+                text: `⚠️ MEDICAL NOTICE: Verify with healthcare professional.\n\n${text}\n\n---\nExtracted by MedReader-SL`
+            };
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    showToast('Shared successfully', 'success');
+                    addAuditEntry('Share', 'Shared prescription text via Web Share API');
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        showToast('Share failed: ' + err.message, 'error');
+                    }
+                }
+            } else {
+                // Fallback: copy to clipboard
+                try {
+                    await navigator.clipboard.writeText(shareData.text);
+                    showToast('Text copied to clipboard (sharing not supported)', 'info');
+                } catch (err) {
+                    showToast('Share not supported on this device', 'error');
+                }
+            }
+        });
+        
+        // ===========================
+        // NEW FEATURE: Text Formatting
+        // ===========================
+        
+        // Store original text for reset
+        let originalExtractedText = '';
+        
+        document.getElementById('formatBtn').addEventListener('click', () => {
+            const formatOptions = document.getElementById('formatOptions');
+            formatOptions.classList.toggle('hidden');
+            
+            // Store original text when first opening format options
+            if (!originalExtractedText) {
+                originalExtractedText = document.getElementById('extractedText').value;
+            }
+        });
+        
+        function formatText(action) {
+            const textarea = document.getElementById('extractedText');
+            let text = textarea.value;
+            
+            switch (action) {
+                case 'removeExtraSpaces':
+                    text = text.replace(/  +/g, ' ').replace(/\n\s*\n/g, '\n\n').trim();
+                    break;
+                case 'uppercase':
+                    text = text.toUpperCase();
+                    break;
+                case 'lowercase':
+                    text = text.toLowerCase();
+                    break;
+                case 'capitalize':
+                    text = text.replace(/\b\w/g, char => char.toUpperCase());
+                    break;
+                case 'removeLineBreaks':
+                    text = text.replace(/\n/g, ' ').replace(/  +/g, ' ');
+                    break;
+                case 'reset':
+                    text = originalExtractedText || text;
+                    break;
+            }
+            
+            textarea.value = text;
+            updateWordCount();
+            addAuditEntry('Text formatted', `Applied: ${action}`);
+            showToast(`Text formatted: ${action}`, 'success');
+        }
+        
+        // Make formatText available globally
+        window.formatText = formatText;
+        
+        // ===========================
+        // NEW FEATURE: Clear All
+        // ===========================
+        
+        document.getElementById('clearAllBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all data and start fresh?')) {
+                // Reset state
+                state.originalImage = null;
+                state.processedImage = null;
+                state.ocrResults = [];
+                state.extractedInfo = {medicines: [], dosages: [], frequencies: []};
+                state.auditLog = [];
+                originalExtractedText = '';
+                
+                // Hide sections
+                document.getElementById('previewSection').classList.add('hidden');
+                document.getElementById('processingSection').classList.add('hidden');
+                document.getElementById('resultsSection').classList.add('hidden');
+                document.getElementById('processBtn').classList.add('hidden');
+                document.getElementById('qualityCheck').classList.add('hidden');
+                document.getElementById('formatOptions').classList.add('hidden');
+                
+                // Clear canvases
+                const origCanvas = document.getElementById('originalCanvas');
+                const enhCanvas = document.getElementById('enhancedCanvas');
+                origCanvas.getContext('2d').clearRect(0, 0, origCanvas.width, origCanvas.height);
+                enhCanvas.getContext('2d').clearRect(0, 0, enhCanvas.width, enhCanvas.height);
+                
+                // Clear text
+                document.getElementById('extractedText').value = '';
+                document.getElementById('wordCountValue').textContent = '0';
+                document.getElementById('charCountValue').textContent = '0';
+                
+                // Clear file input
+                document.getElementById('imageInput').value = '';
+                
+                // Clear audit trail
+                document.getElementById('auditTrail').innerHTML = '';
+                
+                showToast('All data cleared', 'success');
+            }
+        });
+        
+        // ===========================
+        // NEW FEATURE: Remove Image
+        // ===========================
+        
+        document.getElementById('removeImageBtn').addEventListener('click', () => {
+            // Reset image state
+            state.originalImage = null;
+            state.processedImage = null;
+            originalExtractedText = '';
+            
+            // Hide preview section
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('processBtn').classList.add('hidden');
+            document.getElementById('qualityCheck').classList.add('hidden');
+            
+            // Clear canvases
+            const origCanvas = document.getElementById('originalCanvas');
+            const enhCanvas = document.getElementById('enhancedCanvas');
+            origCanvas.getContext('2d').clearRect(0, 0, origCanvas.width, origCanvas.height);
+            enhCanvas.getContext('2d').clearRect(0, 0, enhCanvas.width, enhCanvas.height);
+            
+            // Clear file input
+            document.getElementById('imageInput').value = '';
+            
+            addAuditEntry('Image removed', 'User removed uploaded image');
+            showToast('Image removed', 'info');
+        });
+        
+        // ===========================
+        // NEW FEATURE: Info Modal
+        // ===========================
+        
+        document.getElementById('infoBtn').addEventListener('click', () => {
+            document.getElementById('infoModal').classList.remove('hidden');
+        });
+        
+        document.getElementById('closeInfoModal').addEventListener('click', () => {
+            document.getElementById('infoModal').classList.add('hidden');
+        });
+        
+        document.getElementById('closeInfoModalBtn').addEventListener('click', () => {
+            document.getElementById('infoModal').classList.add('hidden');
+        });
+        
+        // ===========================
+        // NEW FEATURE: Privacy Modal
+        // ===========================
+        
+        document.getElementById('privacyBtn').addEventListener('click', () => {
+            document.getElementById('privacyModal').classList.remove('hidden');
+        });
+        
+        document.getElementById('closePrivacyModal').addEventListener('click', () => {
+            document.getElementById('privacyModal').classList.add('hidden');
+        });
+        
+        document.getElementById('closePrivacyModalBtn').addEventListener('click', () => {
+            document.getElementById('privacyModal').classList.add('hidden');
+        });
+        
+        // Close modals when clicking outside
+        document.getElementById('infoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'infoModal') {
+                document.getElementById('infoModal').classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('privacyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'privacyModal') {
+                document.getElementById('privacyModal').classList.add('hidden');
+            }
+        });
 
         // Prevent default drag
         document.addEventListener('dragover', e => e.preventDefault());
