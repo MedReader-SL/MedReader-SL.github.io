@@ -3,90 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedReader-SL v1.2 | AI-Enhanced Medical OCR System</title>
-    <meta name="description" content="Advanced medical prescription OCR with AI-powered correction, 95-99% accuracy, multi-language support, and intelligent text extraction">
+    <title>MedReader-SL | Medical Prescription OCR</title>
+    <meta name="description" content="Simple medical prescription OCR with AI-powered correction">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
-    <script>
-        if (typeof tailwind !== 'undefined') {
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        colors: {
-                            medical: { 50: '#f0f9ff', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
-                            health: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a' },
-                            warning: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
     <style>
-        @keyframes gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .gradient-bg { background: linear-gradient(-45deg, #e0f2fe, #f0f9ff, #dcfce7, #f0fdf4); background-size: 400% 400%; animation: gradient 15s ease infinite; }
-        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .pulse-warning { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        .badge-critical { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-        .badge-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .badge-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        
-        /* Fallback styles when Tailwind CSS fails to load */
-        .hidden { display: none !important; }
-        .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
-        .min-h-screen { min-height: 100vh; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; line-height: 1.5; }
-        
-        /* SVG icon sizing fallbacks */
-        svg { max-width: 100%; height: auto; }
-        header svg, main svg { width: 24px; height: 24px; }
-        #dropZone svg { width: 64px; height: 64px; margin: 0 auto 12px; display: block; }
-        
-        /* Layout fallbacks */
-        header { position: sticky; top: 0; z-index: 50; padding: 1rem; }
-        main { padding: 2rem 1rem; }
-        #dropZone { border: 2px dashed #0ea5e9; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
-        #dropZone:hover { background-color: #f0f9ff; }
-        .glass-effect { padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        
-        /* Button fallbacks */
-        button { cursor: pointer; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; background-color: #e5e7eb; }
-        #processBtn { background: linear-gradient(to right, #0ea5e9, #22c55e); color: white; width: 100%; margin-top: 1rem; }
-        #saveApiConfig, #confirmVerification { background-color: #0ea5e9; color: white; }
-        #copyBtn { background-color: #22c55e; color: white; }
-        #downloadBtn { background-color: #8b5cf6; color: white; }
-        #verifyBtn { background-color: #16a34a; color: white; }
-        
-        /* Grid fallback */
-        @media (min-width: 1024px) {
-            main > .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
-        }
-        
-        /* Modal fallback */
-        #apiModal, #verificationModal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
-        #apiModal.hidden, #verificationModal.hidden { display: none !important; }
-        #apiModal > div, #verificationModal > div { max-width: 32rem; width: 100%; background: white; padding: 2rem; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
-        
-        /* Toast fallback */
-        #toast { position: fixed; bottom: 2rem; right: 2rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 100; }
-        #toast.hidden { display: none !important; }
-        
-        /* Form element fallbacks */
-        input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; margin-top: 0.25rem; }
-        input[type="range"] { width: 100%; }
-        input[type="checkbox"] { width: 16px; height: 16px; }
+        .gradient-bg { background: linear-gradient(-45deg, #e0f2fe, #f0f9ff, #dcfce7, #f0fdf4); }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        #toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 100; transition: all 0.3s; }
+        #toast.hidden { transform: translateY(100px); opacity: 0; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
 
     <!-- Medical Disclaimer Banner -->
-    <div class="bg-red-600 text-white py-3 px-4 text-center text-sm font-semibold shadow-lg">
-        ⚠️ MEDICAL NOTICE: This is an assistive tool only. All results MUST be verified by a licensed healthcare professional before use.
+    <div class="bg-red-600 text-white py-3 px-4 text-center text-sm font-semibold">
+        ⚠️ MEDICAL NOTICE: This is an assistive tool only. All results MUST be verified by a licensed healthcare professional.
     </div>
 
     <!-- Header -->
@@ -94,50 +28,40 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-gradient-to-br from-medical-500 to-health-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold bg-gradient-to-r from-medical-600 to-health-600 bg-clip-text text-transparent">
-                            MedReader-SL v1.2
-                        </h1>
-                        <p class="text-xs text-gray-600">AI-Enhanced Medical OCR | 95-99% Accuracy</p>
+                        <h1 class="text-2xl font-bold text-gray-800">MedReader-SL</h1>
+                        <p class="text-xs text-gray-600">AI-Enhanced Medical OCR</p>
                     </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <span class="hidden sm:flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        Requires Verification
-                    </span>
-                    <button id="infoBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="About">
-                        <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </button>
-                    <button id="privacyBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="Privacy">
-                        <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                    </button>
-                    <button id="apiConfigBtn" class="p-2 hover:bg-medical-50 rounded-lg transition-colors" title="API Settings">
-                        <svg class="w-6 h-6 text-medical-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-7xl">
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+
+        <!-- Security Warning -->
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-orange-700">
+                        <strong>Security Notice:</strong> This application embeds an API key in client-side code. For personal/demo use only. Do not use in production.
+                    </p>
+                </div>
+            </div>
+        </div>
 
         <!-- Safety Notice -->
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 animate-fade-in">
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
             <div class="flex">
                 <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -145,2570 +69,407 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Important Safety Information</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>This tool provides <strong>assistive OCR only</strong> - NOT diagnostic or prescriptive advice</li>
-                            <li>All extracted text MUST be verified by a licensed pharmacist or healthcare provider</li>
-                            <li>Never use unverified OCR results for medication dispensing</li>
-                            <li>System accuracy varies: 95-98% for printed, 60-80% for handwritten prescriptions</li>
-                            <li>Low confidence results are automatically flagged for manual review</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Multi-Engine Status -->
-        <div id="engineStatus" class="glass-effect rounded-2xl shadow-xl p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">OCR Engine Status</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Tesseract.js</span>
-                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Active</span>
-                    </div>
-                    <p class="text-xs text-gray-500">Local processing • Free • 85-95% accuracy</p>
-                </div>
-                
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Google Vision API</span>
-                        <span id="googleStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
-                    </div>
-                    <p class="text-xs text-gray-500">Cloud • Paid • 95-98% accuracy</p>
-                    <button onclick="showApiConfig('google')" class="mt-2 text-xs text-medical-600 hover:text-medical-700 font-medium">Configure</button>
-                </div>
-                
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Azure OCR</span>
-                        <span id="azureStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
-                    </div>
-                    <p class="text-xs text-gray-500">Cloud • Paid • 95-98% accuracy</p>
-                    <button onclick="showApiConfig('azure')" class="mt-2 text-xs text-medical-600 hover:text-medical-700 font-medium">Configure</button>
-                </div>
-            </div>
-            
-            <!-- OCR.space Free API Section -->
-            <div class="mt-4 border border-green-200 rounded-lg p-4 bg-green-50">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-semibold text-gray-700">OCR.space</span>
-                        <span class="px-2 py-0.5 bg-green-600 text-white text-xs rounded">FREE</span>
-                    </div>
-                    <span id="ocrSpaceStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
-                </div>
-                <p class="text-xs text-gray-500 mb-2">Cloud API • Free tier • Good handwriting support • Recommended fallback</p>
-                <button onclick="showApiConfig('ocrspace')" class="text-xs text-medical-600 hover:text-medical-700 font-medium">Configure Free API Key →</button>
-            </div>
-            
-            <!-- OpenAI AI Correction Section -->
-            <div class="mt-4 border border-purple-200 rounded-lg p-4 bg-purple-50">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-semibold text-gray-700">🤖 OpenAI AI Correction</span>
-                        <span class="px-2 py-0.5 bg-purple-600 text-white text-xs rounded">AI-POWERED</span>
-                        <span class="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded">NEW</span>
-                    </div>
-                    <span id="openaiStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
-                </div>
-                <p class="text-xs text-gray-500 mb-2">ChatGPT-like accuracy • Automatic medical term correction • Context-aware</p>
-                <button onclick="showApiConfig('openai')" class="text-xs text-medical-600 hover:text-medical-700 font-medium">Configure OpenAI API →</button>
-            </div>
-            
-            <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                <strong>💡 Pro Tip:</strong> Configure OCR.space (free) as a fallback engine for improved accuracy without cost. Results are compared across engines to maximize accuracy.
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Left Column -->
-            <div class="lg:col-span-1 space-y-6">
-                
-                <!-- Upload Section -->
-                <div class="glass-effect rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Upload Prescription</h2>
-                    
-                    <div id="dropZone" class="border-3 border-dashed border-medical-300 rounded-xl p-8 text-center transition-all hover:border-medical-500 hover:bg-medical-50 cursor-pointer">
-                        <input type="file" id="imageInput" accept="image/*" class="hidden">
-                        <svg class="w-16 h-16 text-medical-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <p class="text-sm font-medium text-gray-700 mb-2">Drop image or click to browse</p>
-                        <p class="text-xs text-gray-500">JPG, PNG (Max 10MB)</p>
-                    </div>
-
-                    <!-- Image Quality Validator -->
-                    <div id="qualityCheck" class="hidden mt-4 space-y-2">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Image Quality Assessment</h3>
-                        <div id="qualityResults"></div>
-                    </div>
-                    
-                    <button id="processBtn" class="hidden w-full mt-4 bg-gradient-to-r from-medical-500 to-health-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-medical-600 hover:to-health-600 transition-all shadow-lg">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        Process with Multi-Engine OCR
-                    </button>
-                </div>
-
-                <!-- Validation Settings -->
-                <div class="glass-effect rounded-2xl shadow-xl p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Validation Settings</h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm text-gray-700 block mb-2">OCR Language</label>
-                            <select id="languageSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-500">
-                                <option value="eng">English</option>
-                                <option value="eng+fra">English + French</option>
-                                <option value="eng+spa">English + Spanish</option>
-                                <option value="eng+deu">English + German</option>
-                                <option value="eng+ita">English + Italian</option>
-                                <option value="eng+por">English + Portuguese</option>
-                                <option value="eng+ara">English + Arabic</option>
-                                <option value="eng+chi_sim">English + Chinese (Simplified)</option>
-                                <option value="eng+hin">English + Hindi</option>
-                                <option value="fra">French</option>
-                                <option value="spa">Spanish</option>
-                                <option value="deu">German</option>
-                                <option value="ita">Italian</option>
-                                <option value="por">Portuguese</option>
-                                <option value="ara">Arabic</option>
-                                <option value="chi_sim">Chinese (Simplified)</option>
-                                <option value="hin">Hindi</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Select the language(s) in your prescription</p>
-                        </div>
-                        
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-700">Multi-Engine Consensus</span>
-                            <input type="checkbox" id="multiEngine" class="rounded" checked disabled>
-                        </label>
-                        
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-700">Medical Dictionary Check</span>
-                            <input type="checkbox" id="dictCheck" class="rounded" checked>
-                        </label>
-                        
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-sm text-gray-700">Dosage Validation</span>
-                            <input type="checkbox" id="dosageCheck" class="rounded" checked>
-                        </label>
-                        
-                        <div>
-                            <label class="text-sm text-gray-700 block mb-2">
-                                Confidence Threshold: <span id="thresholdValue">80%</span>
-                            </label>
-                            <input type="range" id="confidenceThreshold" min="50" max="95" value="80" step="5" class="w-full">
-                            <p class="text-xs text-gray-500 mt-1">Results below this threshold will be flagged for review</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quality Checklist -->
-                <div class="glass-effect rounded-2xl shadow-xl p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Best Practices</h3>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-health-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-gray-700">Use bright, even lighting</span>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-health-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-gray-700">Capture entire prescription clearly</span>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-health-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-gray-700">Avoid shadows and glare</span>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-health-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-gray-700">Hold camera steady and level</span>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 text-health-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <span class="text-gray-700">Use highest camera resolution</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div class="lg:col-span-2 space-y-6">
-                
-                <!-- Image Preview -->
-                <div id="previewSection" class="hidden glass-effect rounded-2xl shadow-xl p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Image Analysis</h2>
-                        <button id="removeImageBtn" class="remove-image-btn flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Remove Image
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Original</h3>
-                            <div class="bg-gray-100 rounded-lg p-2">
-                                <canvas id="originalCanvas" class="w-full h-auto border border-gray-300 rounded"></canvas>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Enhanced</h3>
-                            <div class="bg-gray-100 rounded-lg p-2">
-                                <canvas id="enhancedCanvas" class="w-full h-auto border border-gray-300 rounded"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="imageMetrics" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-                </div>
-
-                <!-- Processing Status -->
-                <div id="processingSection" class="hidden glass-effect rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <div class="w-6 h-6 border-4 border-medical-500 border-t-transparent rounded-full animate-spin mr-3"></div>
-                        Multi-Engine Processing
-                    </h2>
-                    
-                    <div id="engineProgress" class="space-y-4 mb-4"></div>
-                    
-                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                        <div id="overallProgress" class="bg-gradient-to-r from-medical-500 to-health-500 h-3 transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <p id="processingStatus" class="text-sm text-gray-600 text-center mt-2">Initializing...</p>
-                </div>
-
-                <!-- Results Section -->
-                <div id="resultsSection" class="hidden glass-effect rounded-2xl shadow-xl p-6">
-                    
-                    <!-- Validation Summary -->
-                    <div class="mb-6 p-4 rounded-lg border-2" id="validationSummary">
-                        <div class="flex items-center justify-between mb-3">
-                            <h2 class="text-xl font-bold text-gray-800">OCR Results</h2>
-                            <div id="overallBadge" class="px-4 py-2 rounded-lg text-white font-semibold shadow-lg"></div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div class="bg-blue-50 p-3 rounded-lg">
-                                <div class="text-xs text-gray-600 mb-1">Consensus Confidence</div>
-                                <div id="consensusConfidence" class="text-2xl font-bold text-blue-600">0%</div>
-                            </div>
-                            <div class="bg-purple-50 p-3 rounded-lg">
-                                <div class="text-xs text-gray-600 mb-1">Engines Agreeing</div>
-                                <div id="enginesAgreeing" class="text-2xl font-bold text-purple-600">0/1</div>
-                            </div>
-                            <div class="bg-green-50 p-3 rounded-lg">
-                                <div class="text-xs text-gray-600 mb-1">Validation Score</div>
-                                <div id="validationScore" class="text-2xl font-bold text-green-600">0/10</div>
-                            </div>
-                        </div>
-                        
-                        <!-- AI Correction Status -->
-                        <div id="aiCorrectionStatus" class="hidden mt-4 bg-purple-50 border border-purple-200 rounded-lg p-3"></div>
-                        
-                        <!-- Warnings/Issues -->
-                        <div id="issuesContainer" class="hidden mt-4"></div>
-                    </div>
-
-                    <!-- Extracted Text -->
-                    <div class="mb-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-lg font-bold text-gray-800">Extracted Text</h3>
-                            <button id="editMode" class="text-sm text-medical-600 hover:text-medical-700 font-medium flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Enable Editing
-                            </button>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-xl border-2 border-gray-200">
-                            <textarea id="extractedText" class="w-full min-h-[300px] bg-transparent font-mono text-sm text-gray-800 leading-relaxed resize-none focus:outline-none" readonly></textarea>
-                        </div>
-                        
-                        <!-- Highlighted Issues -->
-                        <div id="highlightedIssues" class="hidden mt-4 bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-3">Validation Results:</h4>
-                            <div id="issuesList" class="space-y-2"></div>
-                        </div>
-                    </div>
-
-                    <!-- Extracted Structured Information -->
-                    <div id="structuredInfo" class="mb-6 hidden">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">
-                            <svg class="w-5 h-5 inline mr-2 text-medical-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                            </svg>
-                            Structured Information
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Medicines -->
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                                    </svg>
-                                    Medications
-                                </h4>
-                                <div id="medicinesList" class="text-xs text-blue-700 space-y-1"></div>
-                            </div>
-                            
-                            <!-- Dosages -->
-                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                <h4 class="text-sm font-semibold text-purple-800 mb-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                                    </svg>
-                                    Dosages
-                                </h4>
-                                <div id="dosagesList" class="text-xs text-purple-700 space-y-1"></div>
-                            </div>
-                            
-                            <!-- Frequency/Timing -->
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <h4 class="text-sm font-semibold text-green-800 mb-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Frequency
-                                </h4>
-                                <div id="frequenciesList" class="text-xs text-green-700 space-y-1"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Engine Comparison -->
-                    <div id="engineComparison" class="mb-6 hidden">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">Multi-Engine Comparison</h3>
-                        <div id="comparisonTable" class="overflow-x-auto"></div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <!-- Word Count and Stats Display -->
-                    <div class="flex flex-wrap items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="flex items-center space-x-4">
-                            <div id="wordCount" class="text-sm text-gray-600">
-                                <span class="font-semibold">Words:</span> <span id="wordCountValue">0</span>
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                <span class="font-semibold">Characters:</span> <span id="charCountValue">0</span>
-                            </div>
-                        </div>
-                        <div id="statsCounter" class="text-sm text-gray-600">
-                            <span class="font-semibold">📊 Total Processed:</span> <span id="processedCountValue">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Primary Action Buttons -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                        <button id="verifyBtn" class="flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-all shadow-md">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Verify
-                        </button>
-                        
-                        <button id="copyBtn" class="flex items-center justify-center bg-health-500 text-white py-3 px-4 rounded-lg hover:bg-health-600 transition-all shadow-md">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                            Copy
-                        </button>
-                        
-                        <button id="downloadBtn" class="flex items-center justify-center bg-purple-500 text-white py-3 px-4 rounded-lg hover:bg-purple-600 transition-all shadow-md">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                            Download
-                        </button>
-                        
-                        <button id="newScanBtn" class="flex items-center justify-center bg-gray-500 text-white py-3 px-4 rounded-lg hover:bg-gray-600 transition-all shadow-md">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            New Scan
-                        </button>
-                    </div>
-
-                    <!-- Secondary Action Buttons (Print, Share, Format, Clear) -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                        <button id="printBtn" class="flex items-center justify-center bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-all shadow-md text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                            </svg>
-                            Print
-                        </button>
-                        
-                        <button id="shareBtn" class="flex items-center justify-center bg-indigo-500 text-white py-2 px-3 rounded-lg hover:bg-indigo-600 transition-all shadow-md text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                            </svg>
-                            Share
-                        </button>
-                        
-                        <button id="formatBtn" class="flex items-center justify-center bg-orange-500 text-white py-2 px-3 rounded-lg hover:bg-orange-600 transition-all shadow-md text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                            </svg>
-                            Format
-                        </button>
-                        
-                        <button id="clearAllBtn" class="flex items-center justify-center bg-red-500 text-white py-2 px-3 rounded-lg hover:bg-red-600 transition-all shadow-md text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Clear All
-                        </button>
-                    </div>
-
-                    <!-- Text Formatting Options Dropdown -->
-                    <div id="formatOptions" class="hidden mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                        <h4 class="text-sm font-semibold text-orange-800 mb-2">Text Formatting Options</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="formatText('removeExtraSpaces')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Remove Extra Spaces</button>
-                            <button onclick="formatText('uppercase')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">UPPERCASE</button>
-                            <button onclick="formatText('lowercase')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">lowercase</button>
-                            <button onclick="formatText('capitalize')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Capitalize Words</button>
-                            <button onclick="formatText('removeLineBreaks')" class="px-3 py-1 text-xs bg-white border border-orange-300 rounded hover:bg-orange-100 transition-colors">Remove Line Breaks</button>
-                            <button onclick="formatText('reset')" class="px-3 py-1 text-xs bg-red-100 border border-red-300 rounded hover:bg-red-200 transition-colors text-red-700">Reset to Original</button>
-                        </div>
-                    </div>
-
-                    <!-- Audit Trail -->
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Audit Trail</h4>
-                        <div id="auditTrail" class="text-xs text-gray-600 space-y-1"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- API Configuration Modal -->
-    <div id="apiModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-2xl max-w-2xl w-full p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Configure OCR APIs</h2>
-            
-            <div class="space-y-6">
-                <!-- Google Vision API -->
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-gray-800 mb-3">Google Cloud Vision API</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1">API Key</label>
-                            <input type="password" id="googleApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your Google Cloud Vision API key">
-                        </div>
-                        <p class="text-xs text-gray-500">
-                            Get your API key from <a href="https://console.cloud.google.com/" target="_blank" class="text-medical-600 hover:underline">Google Cloud Console</a>.
-                            Free tier: 1,000 requests/month.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Azure Computer Vision -->
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-gray-800 mb-3">Azure Computer Vision</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1">Subscription Key</label>
-                            <input type="password" id="azureApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your Azure subscription key">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1">Endpoint URL</label>
-                            <input type="text" id="azureEndpoint" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="https://YOUR-RESOURCE.cognitiveservices.azure.com/">
-                        </div>
-                        <p class="text-xs text-gray-500">
-                            Get your credentials from <a href="https://portal.azure.com/" target="_blank" class="text-medical-600 hover:underline">Azure Portal</a>.
-                            Free tier: 5,000 transactions/month.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- OCR.space Free API -->
-                <div class="border border-green-300 rounded-lg p-4 bg-green-50">
-                    <div class="flex items-center space-x-2 mb-3">
-                        <h3 class="font-semibold text-gray-800">OCR.space API</h3>
-                        <span class="px-2 py-0.5 bg-green-600 text-white text-xs rounded font-semibold">FREE</span>
-                        <span class="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-semibold">RECOMMENDED</span>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1">API Key</label>
-                            <input type="password" id="ocrSpaceApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your free OCR.space API key">
-                        </div>
-                        <div class="bg-white border border-green-200 rounded-lg p-3">
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>✓ Free Features:</strong>
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-1 ml-4 list-disc">
-                                <li>25,000 requests/month free</li>
-                                <li>Better handwriting recognition than Tesseract</li>
-                                <li>OCR Engine 2 optimized for documents</li>
-                                <li>Auto-rotation and scaling</li>
-                            </ul>
-                        </div>
-                        <p class="text-xs text-gray-500">
-                            Get your FREE API key from <a href="https://ocr.space/ocrapi/freekey" target="_blank" class="text-medical-600 hover:underline font-semibold">ocr.space/ocrapi/freekey</a>.
-                            No credit card required!
-                        </p>
-                    </div>
-                </div>
-
-                <!-- OpenAI API for Medical Term Correction -->
-                <div class="border border-purple-300 rounded-lg p-4 bg-purple-50">
-                    <div class="flex items-center space-x-2 mb-3">
-                        <h3 class="font-semibold text-gray-800">OpenAI API - AI Medical Term Correction</h3>
-                        <span class="px-2 py-0.5 bg-purple-600 text-white text-xs rounded font-semibold">AI-POWERED</span>
-                        <span class="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded font-semibold">NEW</span>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1">OpenAI API Key</label>
-                            <input type="password" id="openaiApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your OpenAI API key (sk-...)">
-                        </div>
-                        <div class="bg-white border border-purple-200 rounded-lg p-3">
-                            <p class="text-xs text-gray-700 mb-2">
-                                <strong>✓ AI-Enhanced Features:</strong>
-                            </p>
-                            <ul class="text-xs text-gray-600 space-y-1 ml-4 list-disc">
-                                <li>ChatGPT-like accuracy for medical terms</li>
-                                <li>Automatic correction of OCR errors</li>
-                                <li>Context-aware medical terminology</li>
-                                <li>Standardized drug name formatting</li>
-                                <li>Dosage and instruction clarification</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-2">AI Model</label>
-                            <select id="openaiModel" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
-                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster, Lower Cost)</option>
-                                <option value="gpt-4">GPT-4 (Higher Accuracy)</option>
-                                <option value="gpt-4-turbo-preview">GPT-4 Turbo (Balanced)</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="enableAiCorrection" class="w-4 h-4">
-                            <label for="enableAiCorrection" class="text-sm text-gray-700">Enable AI correction for all OCR results</label>
-                        </div>
-                        <p class="text-xs text-gray-500">
-                            Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-medical-600 hover:underline font-semibold">OpenAI Platform</a>.
-                            Pay-as-you-go pricing (~$0.001 per prescription with GPT-3.5).
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-                    <p class="text-blue-800">
-                        <strong>Privacy Note:</strong> When using cloud APIs, images are sent to external servers for processing. 
-                        Ensure compliance with your local data protection regulations (HIPAA, GDPR, etc.).
+                    <p class="text-sm text-yellow-700">
+                        <strong>Important:</strong> All extracted text MUST be verified by a licensed pharmacist or healthcare provider before use.
                     </p>
                 </div>
-
-                <div class="flex space-x-3">
-                    <button id="saveApiConfig" class="flex-1 bg-medical-500 text-white py-3 rounded-lg font-semibold hover:bg-medical-600 transition-colors">
-                        Save Configuration
-                    </button>
-                    <button id="closeApiModal" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
-                        Cancel
-                    </button>
-                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Verification Modal -->
-    <div id="verificationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-2xl max-w-lg w-full p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Healthcare Professional Verification</h2>
+        <!-- Upload Section -->
+        <div class="glass-effect rounded-2xl shadow-xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Upload Prescription</h2>
             
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Verified By</label>
-                    <input type="text" id="verifierName" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your name">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Professional ID/License</label>
-                    <input type="text" id="verifierId" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="License number">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                    <select id="verifierRole" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="">Select role</option>
-                        <option value="pharmacist">Pharmacist</option>
-                        <option value="doctor">Doctor</option>
-                        <option value="nurse">Nurse Practitioner</option>
-                        <option value="technician">Pharmacy Technician</option>
-                    </select>
-                </div>
-                
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <label class="flex items-start space-x-2 cursor-pointer">
-                        <input type="checkbox" id="verificationAgreement" class="mt-1">
-                        <span class="text-sm text-yellow-800">
-                            I confirm that I have manually verified this prescription against the original document and 
-                            take full responsibility for its accuracy.
-                        </span>
-                    </label>
-                </div>
-                
-                <div class="flex space-x-3">
-                    <button id="confirmVerification" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors" disabled>
-                        Confirm Verification
-                    </button>
-                    <button id="closeVerificationModal" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
-                        Cancel
-                    </button>
-                </div>
+            <div id="dropZone" class="border-2 border-dashed border-blue-400 rounded-xl p-8 text-center cursor-pointer hover:bg-blue-50 transition-colors">
+                <input type="file" id="imageInput" accept="image/*" class="hidden" multiple>
+                <svg class="w-16 h-16 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <p class="text-gray-700 font-semibold mb-2">Click to upload or drag and drop</p>
+                <p class="text-sm text-gray-500">Supports JPG, PNG (Max 10 files)</p>
             </div>
-        </div>
-    </div>
 
-    <!-- Info Modal -->
-    <div id="infoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">About MedReader-SL</h2>
-                <button id="closeInfoModal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+            <div id="previewSection" class="hidden mt-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Selected Images:</h3>
+                <div id="imagePreview" class="grid grid-cols-2 gap-4"></div>
             </div>
-            
-            <div class="space-y-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-medical-600 mb-2">🏥 What is MedReader-SL?</h3>
-                    <p class="text-gray-700">MedReader-SL is an AI-enhanced medical prescription OCR system that converts prescription images to readable text with 95-99% accuracy. It uses multi-engine OCR processing and intelligent medical term correction.</p>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-medical-600 mb-2">✨ Key Features</h3>
-                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
-                        <li>Multi-engine OCR (Tesseract, Google Vision, Azure, OCR.space)</li>
-                        <li>AI-powered medical term correction with OpenAI</li>
-                        <li>150+ medication database with fuzzy matching</li>
-                        <li>18 language support</li>
-                        <li>Dosage and frequency extraction</li>
-                        <li>Professional verification workflow</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-medical-600 mb-2">📊 Accuracy Rates</h3>
-                    <ul class="text-gray-700 space-y-1">
-                        <li>• AI-enhanced prescriptions: <strong>95-99%</strong></li>
-                        <li>• Multi-engine consensus: <strong>95-98%</strong></li>
-                        <li>• Printed prescriptions: <strong>90-95%</strong></li>
-                        <li>• Handwritten prescriptions: <strong>60-80%</strong></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-medical-600 mb-2">📋 Version Information</h3>
-                    <p class="text-gray-700">Version: <strong>1.2.0</strong></p>
-                    <p class="text-gray-700">Last Updated: <strong>2026-02-01</strong></p>
-                </div>
-            </div>
-            
-            <button id="closeInfoModalBtn" class="w-full mt-6 bg-medical-500 text-white py-3 rounded-lg font-semibold hover:bg-medical-600 transition-colors">
-                Close
+
+            <button id="processBtn" class="w-full mt-6 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold py-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Process Prescription(s)
             </button>
-        </div>
-    </div>
 
-    <!-- Privacy Modal -->
-    <div id="privacyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">🔒 Privacy & Security</h2>
-                <button id="closePrivacyModal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <div id="progressSection" class="hidden mt-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                    <span id="progressText">Processing...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden glass-effect rounded-2xl shadow-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Extracted Text</h2>
+                <div class="flex space-x-2">
+                    <button id="copyBtn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                        <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                    </button>
+                    <button id="downloadBtn" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                        <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download
+                    </button>
+                    <button id="clearBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <div id="aiCorrectionInfo" class="hidden mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                </button>
-            </div>
-            
-            <div class="space-y-6">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-green-800 mb-2">✅ 100% Local Processing (Default)</h3>
-                    <p class="text-green-700">When using Tesseract.js (default), all processing happens entirely in your browser:</p>
-                    <ul class="text-green-700 mt-2 space-y-1 list-disc list-inside">
-                        <li>Images are NEVER uploaded to any server</li>
-                        <li>No data is stored in the cloud</li>
-                        <li>No network transmission of your medical data</li>
-                        <li>Data is deleted when you close/refresh browser</li>
-                    </ul>
-                </div>
-                
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Cloud API Usage (Optional)</h3>
-                    <p class="text-yellow-700">If you configure cloud APIs (Google Vision, Azure, OCR.space, OpenAI):</p>
-                    <ul class="text-yellow-700 mt-2 space-y-1 list-disc list-inside">
-                        <li>Images/text ARE sent to external servers for processing</li>
-                        <li>Subject to each provider's privacy policy</li>
-                        <li>Ensure compliance with HIPAA, GDPR, or local regulations</li>
-                        <li>API keys are stored locally in your browser only</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">📦 Data Storage</h3>
-                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
-                        <li>Uses browser localStorage only for API keys and settings</li>
-                        <li>Statistics counter stored locally</li>
-                        <li>No personal or medical information is permanently stored</li>
-                        <li>No cookies or tracking</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">🛡️ Security Best Practices</h3>
-                    <ul class="text-gray-700 space-y-1 list-disc list-inside">
-                        <li>Always verify OCR results with a healthcare professional</li>
-                        <li>Use HTTPS when hosting this application</li>
-                        <li>Keep API keys confidential</li>
-                        <li>Clear browser data after sensitive sessions</li>
-                    </ul>
+                    <span class="text-sm text-green-800">✨ AI-enhanced medical term correction applied</span>
                 </div>
             </div>
-            
-            <button id="closePrivacyModalBtn" class="w-full mt-6 bg-medical-500 text-white py-3 rounded-lg font-semibold hover:bg-medical-600 transition-colors">
-                I Understand
-            </button>
-        </div>
-    </div>
 
-    <!-- Toast -->
-    <div id="toast" class="hidden fixed bottom-8 right-8 glass-effect rounded-lg shadow-2xl p-4 max-w-sm z-50">
-        <div class="flex items-center space-x-3">
-            <div id="toastIcon"></div>
-            <p id="toastMessage" class="text-gray-800 font-medium"></p>
+            <div id="resultsTabs" class="flex space-x-2 mb-4 overflow-x-auto"></div>
+            
+            <textarea id="extractedText" class="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" readonly></textarea>
+            
+            <div class="mt-2 text-sm text-gray-600">
+                Word count: <span id="wordCount" class="font-semibold">0</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden bg-white rounded-lg shadow-xl p-4 min-w-[300px]">
+        <div class="flex items-center">
+            <div id="toastIcon" class="mr-3"></div>
+            <div>
+                <p id="toastMessage" class="font-semibold text-gray-800"></p>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===========================
-        // CONFIGURATION CONSTANTS
-        // ===========================
-        
-        const CONFIG = {
-            MEDICINE_FUZZY_MATCH_THRESHOLD: 70,  // Minimum similarity % for medicine recognition
-            SPELL_CHECK_THRESHOLD: 60,            // Minimum similarity % for spell suggestions
-            MAX_OCR_ENGINES: 4,                   // Maximum number of OCR engines supported (Tesseract, OCR.space, Google, Azure)
-            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5, // Bonus % per additional agreeing engine
-            
-            // OCR.space API configuration
-            OCRSPACE_BASE_CONFIDENCE: 85,         // Base confidence for OCR.space results
-            OCRSPACE_SUCCESS_CONFIDENCE: 90,      // Confidence for successful parse (exit code 1)
-            OCRSPACE_PARTIAL_CONFIDENCE: 75,      // Confidence for partial success (exit code 0)
-            OCRSPACE_TEXT_LENGTH_THRESHOLD: 50,   // Minimum text length for confidence boost
-            OCRSPACE_TEXT_LENGTH_BONUS: 5,        // Confidence bonus for meaningful text
-            OCRSPACE_MAX_CONFIDENCE: 95,          // Maximum confidence cap
-            OCRSPACE_JPEG_QUALITY: 0.95           // JPEG quality for image conversion
-        };
-        
-        // ===========================
-        // MEDICAL DICTIONARY & VALIDATION
-        // ===========================
-        
-        const MEDICAL_DICTIONARY = {
-            medications: [
-                // Common pain relievers and anti-inflammatories
-                'paracetamol', 'acetaminophen', 'ibuprofen', 'aspirin', 'naproxen', 'diclofenac', 'ketorolac', 'celecoxib',
-                'tramadol', 'codeine', 'morphine', 'oxycodone', 'hydrocodone', 'fentanyl',
-                
-                // Antibiotics
-                'amoxicillin', 'azithromycin', 'ciprofloxacin', 'levofloxacin', 'doxycycline', 'cephalexin', 
-                'clindamycin', 'metronidazole', 'trimethoprim', 'sulfamethoxazole', 'penicillin', 'ampicillin',
-                'ceftriaxone', 'cefuroxime', 'clarithromycin', 'erythromycin', 'vancomycin', 'linezolid',
-                
-                // Diabetes medications
-                'metformin', 'insulin', 'glipizide', 'glyburide', 'sitagliptin', 'pioglitazone', 'glimepiride',
-                'empagliflozin', 'liraglutide', 'dulaglutide', 'semaglutide', 'canagliflozin', 'dapagliflozin',
-                
-                // Cardiovascular medications
-                'lisinopril', 'enalapril', 'ramipril', 'losartan', 'valsartan', 'telmisartan', 'olmesartan',
-                'atorvastatin', 'simvastatin', 'rosuvastatin', 'pravastatin', 'lovastatin', 'fluvastatin',
-                'amlodipine', 'nifedipine', 'diltiazem', 'verapamil', 'metoprolol', 'atenolol', 'carvedilol',
-                'bisoprolol', 'propranolol', 'hydrochlorothiazide', 'furosemide', 'spironolactone', 'chlorthalidone',
-                'warfarin', 'apixaban', 'rivaroxaban', 'dabigatran', 'clopidogrel', 'ticagrelor',
-                
-                // Respiratory medications
-                'albuterol', 'salbutamol', 'fluticasone', 'budesonide', 'montelukast', 'ipratropium', 
-                'tiotropium', 'theophylline', 'salmeterol', 'formoterol', 'beclomethasone',
-                
-                // Gastrointestinal medications
-                'omeprazole', 'lansoprazole', 'pantoprazole', 'esomeprazole', 'rabeprazole', 'ranitidine',
-                'famotidine', 'metoclopramide', 'ondansetron', 'loperamide', 'bismuth', 'lactulose',
-                'polyethylene', 'mesalamine', 'sulfasalazine',
-                
-                // Neurological and psychiatric medications
-                'gabapentin', 'pregabalin', 'carbamazepine', 'phenytoin', 'valproate', 'levetiracetam',
-                'levothyroxine', 'sertraline', 'escitalopram', 'fluoxetine', 'paroxetine', 'citalopram',
-                'venlafaxine', 'duloxetine', 'amitriptyline', 'nortriptyline', 'mirtazapine', 'trazodone',
-                'alprazolam', 'lorazepam', 'diazepam', 'clonazepam', 'zolpidem', 'quetiapine', 'olanzapine',
-                'risperidone', 'aripiprazole', 'haloperidol', 'donepezil', 'memantine', 'rivastigmine',
-                
-                // Corticosteroids
-                'prednisone', 'prednisolone', 'methylprednisolone', 'dexamethasone', 'hydrocortisone', 
-                'betamethasone', 'triamcinolone',
-                
-                // Other common medications
-                'allopurinol', 'colchicine', 'hydroxychloroquine', 'methotrexate',
-                'cyclosporine', 'tacrolimus', 'azathioprine', 'tamsulosin', 'finasteride', 'dutasteride',
-                'sildenafil', 'tadalafil', 'vitamin', 'calcium', 'iron', 'folic', 'thiamine',
-                'cyanocobalamin', 'cholecalciferol', 'ergocalciferol', 'multivitamin'
-            ],
-            units: ['mg', 'ml', 'mcg', 'g', 'kg', 'units', 'iu', 'tablet', 'tablets', 'capsule', 'capsules', 
-                    'syrup', 'drops', 'tsp', 'tbsp', 'teaspoon', 'tablespoon', 'dose', 'doses', 
-                    'inhalation', 'patch', 'suppository', 'injection', 'vial', 'amp', 'ampoule'],
-            frequency: ['daily', 'twice', 'thrice', 'qd', 'bid', 'tid', 'qid', 'qhs', 'prn', 'stat', 'sos',
-                       'once', 'hourly', 'weekly', 'monthly', 'q4h', 'q6h', 'q8h', 'q12h', 'q24h',
-                       'od', 'bd', 'tds', 'qds', 'ac', 'pc', 'hs'],
-            timing: ['morning', 'afternoon', 'evening', 'night', 'bedtime', 'before', 'after', 'with', 
-                    'without', 'food', 'meal', 'meals', 'breakfast', 'lunch', 'dinner', 'empty', 'stomach',
-                    'needed', 'required', 'necessary'],
-            routes: ['oral', 'po', 'iv', 'im', 'sc', 'subcut', 'sublingual', 'topical', 'rectal', 
-                    'vaginal', 'inhalation', 'nasal', 'ophthalmic', 'otic', 'transdermal']
+        // Configuration
+        // ⚠️ SECURITY WARNING: This API key is exposed in client-side code
+        // For production use, implement a backend proxy to securely handle API calls
+        // The key provided by the user is embedded here as requested
+        const OPENAI_API_KEY = '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';
+        const OPENAI_MODEL = 'gpt-3.5-turbo';
+        const MIN_TEXT_LENGTH_FOR_AI = 5; // Minimum characters for AI correction
+
+        // State
+        const state = {
+            files: [],
+            currentTab: 0,
+            results: []
         };
 
-        // ===========================
-        // STATE MANAGEMENT
-        // ===========================
-        
-        let state = {
-            originalImage: null,
-            processedImage: null,
-            ocrResults: [],
-            extractedInfo: {medicines: [], dosages: [], frequencies: []},
-            apiKeys: {
-                google: localStorage.getItem('googleApiKey') || '',
-                azure: localStorage.getItem('azureApiKey') || '',
-                azureEndpoint: localStorage.getItem('azureEndpoint') || '',
-                ocrSpace: localStorage.getItem('ocrSpaceApiKey') || '',
-                openai: localStorage.getItem('openaiApiKey') || ''
-            },
-            settings: {
-                confidenceThreshold: 80,
-                medicalDictCheck: true,
-                dosageValidation: true,
-                multiEngine: true,
-                language: 'eng', // Default language for OCR
-                enableAiCorrection: localStorage.getItem('enableAiCorrection') === 'true',
-                openaiModel: localStorage.getItem('openaiModel') || 'gpt-3.5-turbo'
-            },
-            auditLog: []
-        };
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const imageInput = document.getElementById('imageInput');
+        const previewSection = document.getElementById('previewSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const processBtn = document.getElementById('processBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsTabs = document.getElementById('resultsTabs');
+        const extractedText = document.getElementById('extractedText');
+        const wordCount = document.getElementById('wordCount');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const aiCorrectionInfo = document.getElementById('aiCorrectionInfo');
 
-        // ===========================
-        // IMAGE PREPROCESSING
-        // ===========================
+        // Initialize
+        dropZone.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', handleFiles);
         
-        function preprocessImage(image) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            ctx.drawImage(image, 0, 0);
-            
-            // Step 1: Grayscale conversion
-            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-                data[i] = data[i + 1] = data[i + 2] = gray;
-            }
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Step 2: Noise reduction (median filter)
-            imageData = applyMedianFilter(ctx, canvas.width, canvas.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Step 3: Auto brightness/contrast adjustment
-            imageData = autoAdjustBrightnessContrast(ctx, canvas.width, canvas.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Step 4: Sharpening for clearer edges
-            imageData = applySharpenFilter(ctx, canvas.width, canvas.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Step 5: Adaptive thresholding (binarization)
-            imageData = applyAdaptiveThreshold(ctx, canvas.width, canvas.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            return canvas;
-        }
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-blue-50');
+        });
         
-        // Median filter for noise reduction
-        function applyMedianFilter(ctx, width, height) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            const result = new Uint8ClampedArray(data);
-            
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    const values = [];
-                    for (let dy = -1; dy <= 1; dy++) {
-                        for (let dx = -1; dx <= 1; dx++) {
-                            const idx = ((y + dy) * width + (x + dx)) * 4;
-                            values.push(data[idx]);
-                        }
-                    }
-                    values.sort((a, b) => a - b);
-                    const median = values[4]; // Middle value of 9 pixels
-                    const idx = (y * width + x) * 4;
-                    result[idx] = result[idx + 1] = result[idx + 2] = median;
-                }
-            }
-            
-            return new ImageData(result, width, height);
-        }
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-blue-50');
+        });
         
-        // Auto brightness and contrast adjustment
-        function autoAdjustBrightnessContrast(ctx, width, height) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            
-            // Calculate histogram
-            let min = 255, max = 0, sum = 0, count = 0;
-            for (let i = 0; i < data.length; i += 4) {
-                const val = data[i];
-                min = Math.min(min, val);
-                max = Math.max(max, val);
-                sum += val;
-                count++;
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-blue-50');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                imageInput.files = createFileList(files);
+                handleFiles();
             }
-            
-            const mean = sum / count;
-            
-            // Stretch histogram to full range
-            const range = max - min;
-            if (range > 0) {
-                for (let i = 0; i < data.length; i += 4) {
-                    let val = data[i];
-                    // Normalize and stretch
-                    val = ((val - min) / range) * 255;
-                    // Apply slight brightness boost if image is dark
-                    if (mean < 100) {
-                        val = Math.min(255, val * 1.2);
-                    }
-                    data[i] = data[i + 1] = data[i + 2] = val;
-                }
-            }
-            
-            return imageData;
-        }
-        
-        // Sharpening filter using unsharp mask
-        function applySharpenFilter(ctx, width, height) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            const result = new Uint8ClampedArray(data);
-            
-            // Sharpening kernel
-            const kernel = [
-                0, -1, 0,
-                -1, 5, -1,
-                0, -1, 0
-            ];
-            
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    let sum = 0;
-                    let kIdx = 0;
-                    for (let dy = -1; dy <= 1; dy++) {
-                        for (let dx = -1; dx <= 1; dx++) {
-                            const idx = ((y + dy) * width + (x + dx)) * 4;
-                            sum += data[idx] * kernel[kIdx++];
-                        }
-                    }
-                    const idx = (y * width + x) * 4;
-                    result[idx] = result[idx + 1] = result[idx + 2] = Math.min(255, Math.max(0, sum));
-                }
-            }
-            
-            return new ImageData(result, width, height);
-        }
-        
-        // Adaptive thresholding for better binarization
-        function applyAdaptiveThreshold(ctx, width, height) {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            const blockSize = 15;
-            const C = 10; // Constant subtracted from mean
-            
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    // Calculate local mean
-                    let sum = 0, count = 0;
-                    for (let dy = -blockSize; dy <= blockSize; dy++) {
-                        for (let dx = -blockSize; dx <= blockSize; dx++) {
-                            const ny = y + dy;
-                            const nx = x + dx;
-                            if (ny >= 0 && ny < height && nx >= 0 && nx < width) {
-                                const idx = (ny * width + nx) * 4;
-                                sum += data[idx];
-                                count++;
-                            }
-                        }
-                    }
-                    const threshold = (sum / count) - C;
-                    const idx = (y * width + x) * 4;
-                    const val = data[idx] > threshold ? 255 : 0;
-                    data[idx] = data[idx + 1] = data[idx + 2] = val;
-                }
-            }
-            
-            return imageData;
+        });
+
+        processBtn.addEventListener('click', processImages);
+        copyBtn.addEventListener('click', copyToClipboard);
+        downloadBtn.addEventListener('click', downloadText);
+        clearBtn.addEventListener('click', clearAll);
+
+        // Handle file selection
+        function handleFiles() {
+            const files = Array.from(imageInput.files);
+            if (files.length === 0) return;
+
+            state.files = files.slice(0, 10); // Max 10 files
+            displayPreviews();
+            processBtn.disabled = false;
         }
 
-        // ===========================
-        // QUALITY ASSESSMENT
-        // ===========================
-        
-        function assessImageQuality(image) {
-            const issues = [];
-            const metrics = {
-                width: image.width,
-                height: image.height,
-                resolution: image.width * image.height
-            };
-            
-            if (metrics.width < 800 || metrics.height < 600) {
-                issues.push({type: 'warning', message: 'Low resolution - may affect accuracy'});
-            }
-            
-            if (metrics.resolution < 1000000) {
-                issues.push({type: 'warning', message: 'Image quality below optimal (< 1MP)'});
-            }
-            
-            return {metrics, issues};
-        }
+        // Display image previews
+        function displayPreviews() {
+            imagePreview.innerHTML = '';
+            previewSection.classList.remove('hidden');
 
-        // ===========================
-        // OCR ENGINES
-        // ===========================
-        
-        async function runTesseractOCR(image, onProgress) {
-            if (typeof Tesseract === 'undefined') {
-                return {
-                    engine: 'Tesseract.js',
-                    text: '',
-                    confidence: 0,
-                    status: 'error',
-                    error: 'Tesseract.js library failed to load. Please check your connection or browser extensions and refresh the page.'
+            state.files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'relative';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
+                        <div class="mt-1 text-xs text-gray-600 truncate">${file.name}</div>
+                    `;
+                    imagePreview.appendChild(div);
                 };
-            }
-            try {
-                // Get selected language (default to English)
-                const selectedLang = state.settings.language || 'eng';
-                
-                const { data: { text, confidence, words } } = await Tesseract.recognize(
-                    image,
-                    selectedLang,
-                    {
-                        logger: m => {
-                            if (m.status === 'recognizing text' && onProgress) {
-                                onProgress(m.progress * 100);
-                            }
-                        },
-                        // Optimized parameters for medical prescriptions
-                        tessedit_pageseg_mode: 6, // Assume uniform block of text
-                        tessedit_ocr_engine_mode: 1, // Neural nets LSTM engine
-                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,;:()-/\n', // Medical text characters
-                        preserve_interword_spaces: '1',
-                        // Enhanced accuracy settings
-                        tessedit_enable_dict_correction: '1',
-                        tessedit_enable_bigram_correction: '1',
-                        tessedit_rejection_debug: '0',
-                        // Quality settings
-                        tessedit_minimal_rej_threshold: '0.5',
-                        tessedit_reject_bad_qual_wds: '1'
-                    }
-                );
-                
-                return {
-                    engine: 'Tesseract.js',
-                    text: text.trim(),
-                    confidence: Math.round(confidence),
-                    words: words,
-                    status: 'success'
-                };
-            } catch (error) {
-                return {
-                    engine: 'Tesseract.js',
-                    text: '',
-                    confidence: 0,
-                    status: 'error',
-                    error: error.message
-                };
-            }
+                reader.readAsDataURL(file);
+            });
         }
 
-        async function runGoogleVisionOCR(image) {
-            if (!state.apiKeys.google) {
-                return {engine: 'Google Vision', status: 'not_configured'};
-            }
-            
-            try {
-                // Convert canvas to base64
-                const base64Image = image.toDataURL('image/jpeg').split(',')[1];
-                
-                const response = await fetch(
-                    `https://vision.googleapis.com/v1/images:annotate?key=${state.apiKeys.google}`,
-                    {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            requests: [{
-                                image: {content: base64Image},
-                                features: [{type: 'TEXT_DETECTION'}]
-                            }]
-                        })
-                    }
-                );
-                
-                const data = await response.json();
-                
-                if (data.responses && data.responses[0].fullTextAnnotation) {
-                    return {
-                        engine: 'Google Vision',
-                        text: data.responses[0].fullTextAnnotation.text,
-                        confidence: 95, // Google doesn't provide per-request confidence
-                        status: 'success'
-                    };
-                } else {
-                    return {engine: 'Google Vision', status: 'error', error: 'No text detected'};
-                }
-            } catch (error) {
-                return {engine: 'Google Vision', status: 'error', error: error.message};
-            }
-        }
+        // Process images with OCR and AI
+        async function processImages() {
+            processBtn.disabled = true;
+            progressSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            state.results = [];
 
-        async function runAzureOCR(image) {
-            if (!state.apiKeys.azure || !state.apiKeys.azureEndpoint) {
-                return {engine: 'Azure OCR', status: 'not_configured'};
-            }
-            
-            try {
-                const blob = await new Promise(resolve => image.toBlob(resolve, 'image/jpeg'));
+            for (let i = 0; i < state.files.length; i++) {
+                const file = state.files[i];
+                const progress = ((i) / state.files.length) * 100;
                 
-                const response = await fetch(
-                    `${state.apiKeys.azureEndpoint}/vision/v3.2/read/analyze`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Ocp-Apim-Subscription-Key': state.apiKeys.azure,
-                            'Content-Type': 'application/octet-stream'
-                        },
-                        body: blob
-                    }
-                );
-                
-                const operationLocation = response.headers.get('Operation-Location');
-                
-                // Poll for results
-                let result;
-                for (let i = 0; i < 10; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    const resultResponse = await fetch(operationLocation, {
-                        headers: {'Ocp-Apim-Subscription-Key': state.apiKeys.azure}
+                updateProgress(progress, `Processing ${i + 1} of ${state.files.length}...`);
+
+                try {
+                    // Run Tesseract OCR
+                    const ocrResult = await runOCR(file);
+                    
+                    // Apply AI correction
+                    const correctedText = await correctWithAI(ocrResult);
+                    
+                    state.results.push({
+                        filename: file.name,
+                        text: correctedText,
+                        aiCorrected: true
                     });
-                    result = await resultResponse.json();
-                    
-                    if (result.status === 'succeeded') break;
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    state.results.push({
+                        filename: file.name,
+                        text: `Error processing image: ${error.message}`,
+                        aiCorrected: false
+                    });
                 }
-                
-                if (result.status === 'succeeded') {
-                    const text = result.analyzeResult.readResults
-                        .flatMap(page => page.lines)
-                        .map(line => line.text)
-                        .join('\n');
-                    
-                    return {
-                        engine: 'Azure OCR',
-                        text: text,
-                        confidence: 95,
-                        status: 'success'
-                    };
-                }
-                
-                return {engine: 'Azure OCR', status: 'error', error: 'Processing failed'};
-            } catch (error) {
-                return {engine: 'Azure OCR', status: 'error', error: error.message};
             }
+
+            updateProgress(100, 'Complete!');
+            displayResults();
+            
+            setTimeout(() => {
+                progressSection.classList.add('hidden');
+                processBtn.disabled = false;
+            }, 1000);
         }
 
-        // OCR.space API - Free and recommended for better handwriting support
-        async function runOCRSpaceOCR(image) {
-            if (!state.apiKeys.ocrSpace) {
-                return {engine: 'OCR.space', status: 'not_configured'};
-            }
-            
+        // Run Tesseract OCR
+        async function runOCR(file) {
             try {
-                // Convert canvas to base64 with specified quality for OCR accuracy
-                const base64Image = image.toDataURL('image/jpeg', CONFIG.OCRSPACE_JPEG_QUALITY);
-                
-                // Map language codes to OCR.space language codes
-                const langMap = {
-                    'eng': 'eng',
-                    'fra': 'fre',
-                    'spa': 'spa',
-                    'deu': 'ger',
-                    'ita': 'ita',
-                    'por': 'por',
-                    'ara': 'ara',
-                    'chi_sim': 'chs',
-                    'hin': 'hin',
-                    'eng+fra': 'eng',
-                    'eng+spa': 'eng',
-                    'eng+deu': 'eng',
-                    'eng+ita': 'eng',
-                    'eng+por': 'eng',
-                    'eng+ara': 'eng',
-                    'eng+chi_sim': 'eng',
-                    'eng+hin': 'eng'
-                };
-                
-                const ocrSpaceLang = langMap[state.settings.language] || 'eng';
-                
-                // Create form data for OCR.space API
-                const formData = new FormData();
-                formData.append('base64Image', base64Image);
-                formData.append('language', ocrSpaceLang);
-                formData.append('isOverlayRequired', 'false');
-                formData.append('detectOrientation', 'true');
-                formData.append('scale', 'true');
-                formData.append('OCREngine', '2'); // Engine 2 is better for documents and handwriting
-                formData.append('filetype', 'JPG');
-                
-                const response = await fetch('https://api.ocr.space/parse/image', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': state.apiKeys.ocrSpace
-                    },
-                    body: formData
+                const result = await Tesseract.recognize(file, 'eng', {
+                    logger: () => {} // Suppress logs
                 });
-                
-                const data = await response.json();
-                
-                if (data.IsErroredOnProcessing) {
-                    return {
-                        engine: 'OCR.space',
-                        text: '',
-                        confidence: 0,
-                        status: 'error',
-                        error: data.ErrorMessage || 'Processing failed'
-                    };
-                }
-                
-                if (data.ParsedResults && data.ParsedResults.length > 0) {
-                    const result = data.ParsedResults[0];
-                    const text = result.ParsedText || '';
-                    
-                    // Calculate confidence based on exit code and text length
-                    let confidence = CONFIG.OCRSPACE_BASE_CONFIDENCE;
-                    
-                    // Adjust confidence based on exit code
-                    if (result.FileParseExitCode === 1) {
-                        confidence = CONFIG.OCRSPACE_SUCCESS_CONFIDENCE;
-                    } else if (result.FileParseExitCode === 0) {
-                        confidence = CONFIG.OCRSPACE_PARTIAL_CONFIDENCE;
-                    }
-                    
-                    // Boost confidence if meaningful text was extracted
-                    if (text.length > CONFIG.OCRSPACE_TEXT_LENGTH_THRESHOLD) {
-                        confidence = Math.min(CONFIG.OCRSPACE_MAX_CONFIDENCE, confidence + CONFIG.OCRSPACE_TEXT_LENGTH_BONUS);
-                    }
-                    
-                    return {
-                        engine: 'OCR.space',
-                        text: text.trim(),
-                        confidence: confidence,
-                        status: 'success'
-                    };
-                }
-                
-                return {
-                    engine: 'OCR.space',
-                    text: '',
-                    confidence: 0,
-                    status: 'error',
-                    error: 'No text detected'
-                };
+                return result.data.text;
             } catch (error) {
-                return {
-                    engine: 'OCR.space',
-                    text: '',
-                    confidence: 0,
-                    status: 'error',
-                    error: error.message
-                };
+                throw new Error(`OCR failed: ${error.message}`);
             }
         }
 
-        // ===========================
-        // AI-POWERED MEDICAL TERM CORRECTION
-        // ===========================
-        
-        async function correctMedicalTermsWithAI(ocrText) {
-            if (!state.apiKeys.openai || !state.settings.enableAiCorrection) {
-                return {
-                    status: 'not_configured',
-                    correctedText: ocrText,
-                    originalText: ocrText
-                };
+        // AI correction with OpenAI
+        async function correctWithAI(text) {
+            if (!text || text.trim().length < MIN_TEXT_LENGTH_FOR_AI) {
+                if (text && text.trim().length > 0) {
+                    console.log('Text too short for AI correction, using original text');
+                }
+                return text;
             }
-            
+
             try {
-                const prompt = `You are a medical prescription expert. Your task is to correct OCR errors in medical prescriptions and convert them to properly formatted medical text.
-
-Input OCR Text:
-${ocrText}
-
-Instructions:
-1. Correct any OCR errors in medication names (e.g., "Pnracetamol" → "Paracetamol")
-2. Standardize medication names to their proper medical/generic names
-3. Fix dosage formatting (e.g., "500 rng" → "500 mg")
-4. Correct frequency/timing errors (e.g., "twice dally" → "twice daily")
-5. Preserve all original information - only fix errors, don't add or remove content
-6. Maintain the original structure and line breaks
-7. If a term is unclear, use the most likely medical term based on context
-8. Do not add any explanations or comments - only return the corrected prescription text
-
-Output Format:
-Return ONLY the corrected prescription text without any additional explanations, headers, or formatting.`;
-
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.apiKeys.openai}`
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: state.settings.openaiModel,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: 'You are a medical text correction expert specializing in fixing OCR errors in medical prescriptions. You only return corrected text without explanations.'
-                            },
-                            {
-                                role: 'user',
-                                content: prompt
-                            }
-                        ],
-                        temperature: 0.1, // Low temperature for consistent, accurate corrections
+                        model: OPENAI_MODEL,
+                        messages: [{
+                            role: 'system',
+                            content: 'You are a medical OCR correction assistant. Fix OCR errors in medical prescriptions, correct medication names, dosages, and medical terms. Preserve the original structure and format. Only fix obvious errors, do not add information.'
+                        }, {
+                            role: 'user',
+                            content: `Please correct any OCR errors in this medical prescription text:\n\n${text}`
+                        }],
+                        temperature: 0.3,
                         max_tokens: 1000
                     })
                 });
-                
+
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.error?.message || 'OpenAI API request failed');
+                    throw new Error(error.error?.message || 'API request failed');
                 }
-                
+
                 const data = await response.json();
-                const correctedText = data.choices[0].message.content.trim();
-                
-                // Calculate improvement score
-                const improvementScore = calculateSimilarity(ocrText, correctedText);
-                
-                return {
-                    status: 'success',
-                    correctedText: correctedText,
-                    originalText: ocrText,
-                    model: state.settings.openaiModel,
-                    improvementScore: Math.round(100 - improvementScore), // Lower similarity means more corrections
-                    usage: data.usage
-                };
+                return data.choices[0].message.content.trim();
             } catch (error) {
-                console.error('AI correction error:', error);
-                return {
-                    status: 'error',
-                    error: error.message,
-                    correctedText: ocrText,
-                    originalText: ocrText
-                };
+                console.error('AI correction failed:', error);
+                showToast('AI correction unavailable, using OCR text', 'warning');
+                return text;
             }
         }
 
-        // ===========================
-        // VALIDATION FUNCTIONS
-        // ===========================
-        
-        // Extract dosage information from text
-        function extractDosageInfo(text) {
-            const dosagePatterns = [
-                // Matches patterns like "500mg", "10 mg", "2.5mg"
-                /(\d+(?:\.\d+)?)\s*(mg|ml|mcg|g|units?|iu|tablets?|capsules?)/gi,
-                // Matches patterns like "1-2 tablets"
-                /(\d+(?:-\d+)?)\s+(tablets?|capsules?|drops?|tsp|tbsp)/gi,
-                // Matches patterns like "5ml twice daily"
-                /(\d+(?:\.\d+)?)\s*(ml|mg|mcg)\s+(\w+\s+daily|daily|bid|tid|qid)/gi
-            ];
+        // Display results
+        function displayResults() {
+            resultsSection.classList.remove('hidden');
             
-            const dosages = [];
-            dosagePatterns.forEach(pattern => {
-                let match;
-                while ((match = pattern.exec(text)) !== null) {
-                    dosages.push({
-                        full: match[0],
-                        amount: match[1],
-                        unit: match[2]
-                    });
-                }
-            });
-            
-            return dosages;
-        }
-        
-        // Extract frequency/timing information
-        function extractFrequencyInfo(text) {
-            const frequencies = [];
-            const textLower = text.toLowerCase();
-            
-            // Check for standard frequencies
-            MEDICAL_DICTIONARY.frequency.forEach(freq => {
-                if (textLower.includes(freq)) {
-                    frequencies.push(freq);
-                }
-            });
-            
-            // Check for timing information
-            MEDICAL_DICTIONARY.timing.forEach(time => {
-                if (textLower.includes(time)) {
-                    frequencies.push(time);
-                }
-            });
-            
-            return [...new Set(frequencies)]; // Remove duplicates
-        }
-        
-        // Spell check and suggest corrections for medical terms
-        function spellCheckMedicalTerms(text) {
-            const words = text.toLowerCase().split(/\s+/);
-            const corrections = [];
-            
-            words.forEach(word => {
-                // Clean word of punctuation
-                const cleanWord = word.replace(/[^\w]/g, '');
-                if (cleanWord.length < 3) return; // Skip very short words
-                
-                // Check if word is already in dictionary
-                const isKnown = MEDICAL_DICTIONARY.medications.includes(cleanWord) ||
-                               MEDICAL_DICTIONARY.units.includes(cleanWord) ||
-                               MEDICAL_DICTIONARY.frequency.includes(cleanWord) ||
-                               MEDICAL_DICTIONARY.timing.includes(cleanWord) ||
-                               MEDICAL_DICTIONARY.routes.includes(cleanWord);
-                
-                if (!isKnown) {
-                    // Find closest match in medication dictionary
-                    let bestMatch = null;
-                    let bestSimilarity = 0;
-                    
-                    MEDICAL_DICTIONARY.medications.forEach(med => {
-                        const similarity = calculateSimilarity(cleanWord, med);
-                        if (similarity > bestSimilarity && similarity > CONFIG.SPELL_CHECK_THRESHOLD) {
-                            bestSimilarity = similarity;
-                            bestMatch = med;
-                        }
-                    });
-                    
-                    if (bestMatch) {
-                        corrections.push({
-                            original: word,
-                            suggestion: bestMatch,
-                            confidence: bestSimilarity
-                        });
-                    }
-                }
-            });
-            
-            return corrections;
-        }
-        
-        // Recognize and extract medicine names with fuzzy matching
-        function recognizeMedicines(text) {
-            const words = text.toLowerCase().split(/\s+/);
-            const recognizedMeds = [];
-            
-            words.forEach(word => {
-                // Exact match
-                if (MEDICAL_DICTIONARY.medications.includes(word)) {
-                    recognizedMeds.push({name: word, confidence: 100, match: 'exact'});
-                } else {
-                    // Fuzzy match - check if word is similar to any medication
-                    MEDICAL_DICTIONARY.medications.forEach(med => {
-                        if (word.includes(med) || med.includes(word)) {
-                            const similarity = calculateSimilarity(word, med);
-                            if (similarity > CONFIG.MEDICINE_FUZZY_MATCH_THRESHOLD) {
-                                recognizedMeds.push({
-                                    name: med,
-                                    confidence: similarity,
-                                    match: 'fuzzy',
-                                    original: word
-                                });
-                            }
-                        }
-                    });
-                }
-            });
-            
-            // Remove duplicates, keeping highest confidence
-            const uniqueMeds = new Map();
-            recognizedMeds.forEach(med => {
-                if (!uniqueMeds.has(med.name) || uniqueMeds.get(med.name).confidence < med.confidence) {
-                    uniqueMeds.set(med.name, med);
-                }
-            });
-            
-            return Array.from(uniqueMeds.values());
-        }
-        
-        function validateText(text) {
-            const issues = [];
-            const words = text.toLowerCase().split(/\s+/);
-            
-            // Extract structured information
-            const medicines = recognizeMedicines(text);
-            const dosages = extractDosageInfo(text);
-            const frequencies = extractFrequencyInfo(text);
-            
-            // Store extracted info in state for display
-            state.extractedInfo = {medicines, dosages, frequencies};
-            
-            // Check for medical terms
-            if (medicines.length === 0) {
-                issues.push({
-                    type: 'warning',
-                    message: 'No recognized medication names found'
-                });
+            // Show AI correction info if any result was AI corrected
+            if (state.results.some(r => r.aiCorrected)) {
+                aiCorrectionInfo.classList.remove('hidden');
             } else {
-                issues.push({
-                    type: 'info',
-                    message: `Found ${medicines.length} medication(s): ${medicines.map(m => m.name).join(', ')}`
-                });
+                aiCorrectionInfo.classList.add('hidden');
             }
-            
-            // Check for dosage
-            if (dosages.length === 0) {
-                issues.push({
-                    type: 'warning',
-                    message: 'No dosage information detected'
+
+            // Create tabs if multiple results
+            if (state.results.length > 1) {
+                resultsTabs.innerHTML = '';
+                state.results.forEach((result, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${index === state.currentTab ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+                    tab.textContent = `File ${index + 1}`;
+                    tab.onclick = () => switchTab(index);
+                    resultsTabs.appendChild(tab);
                 });
+                resultsTabs.classList.remove('hidden');
             } else {
-                issues.push({
-                    type: 'info',
-                    message: `Found ${dosages.length} dosage(s): ${dosages.map(d => d.full).join(', ')}`
-                });
+                resultsTabs.classList.add('hidden');
             }
-            
-            // Check for frequency
-            if (frequencies.length === 0) {
-                issues.push({
-                    type: 'warning',
-                    message: 'No frequency/timing information found'
-                });
-            } else {
-                issues.push({
-                    type: 'info',
-                    message: `Found frequency/timing: ${frequencies.join(', ')}`
-                });
-            }
-            
-            // Spell check medical terms
-            const spellingSuggestions = spellCheckMedicalTerms(text);
-            if (spellingSuggestions.length > 0 && spellingSuggestions.length <= 5) {
-                // Only show if there are a reasonable number of suggestions
-                const suggestionsText = spellingSuggestions
-                    .map(s => `"${s.original}" → "${s.suggestion}" (${Math.round(s.confidence)}%)`)
-                    .join(', ');
-                issues.push({
-                    type: 'info',
-                    message: `Spelling suggestions: ${suggestionsText}`
-                });
-            }
-            
-            // Check text length
-            if (text.trim().length < 20) {
-                issues.push({
-                    type: 'critical',
-                    message: 'Extracted text is very short - may indicate poor OCR quality'
-                });
-            }
-            
-            return issues;
+
+            displayCurrentResult();
         }
 
-        // Levenshtein distance for text similarity
-        function levenshteinDistance(str1, str2) {
-            const len1 = str1.length;
-            const len2 = str2.length;
-            const matrix = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(0));
-            
-            for (let i = 0; i <= len1; i++) matrix[i][0] = i;
-            for (let j = 0; j <= len2; j++) matrix[0][j] = j;
-            
-            for (let i = 1; i <= len1; i++) {
-                for (let j = 1; j <= len2; j++) {
-                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,      // deletion
-                        matrix[i][j - 1] + 1,      // insertion
-                        matrix[i - 1][j - 1] + cost // substitution
-                    );
-                }
-            }
-            
-            return matrix[len1][len2];
-        }
-        
-        // Calculate text similarity percentage
-        function calculateSimilarity(str1, str2) {
-            const maxLen = Math.max(str1.length, str2.length);
-            if (maxLen === 0) return 100;
-            const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
-            return ((maxLen - distance) / maxLen) * 100;
-        }
-        
-        // Word-level consensus with edit distance
-        function calculateConsensus(results) {
-            const successfulResults = results.filter(r => r.status === 'success');
-            
-            if (successfulResults.length === 0) return {confidence: 0, text: '', agreeing: 0};
-            
-            // If only one result, return it
-            if (successfulResults.length === 1) {
-                return {
-                    confidence: successfulResults[0].confidence,
-                    text: successfulResults[0].text,
-                    agreeing: 1,
-                    similarityScore: 100
-                };
-            }
-            
-            // Multi-engine consensus with word-level comparison
-            const texts = successfulResults.map(r => r.text);
-            const confidences = successfulResults.map(r => r.confidence);
-            
-            // Calculate pairwise similarity between all results
-            const similarities = [];
-            for (let i = 0; i < texts.length; i++) {
-                for (let j = i + 1; j < texts.length; j++) {
-                    similarities.push(calculateSimilarity(texts[i], texts[j]));
-                }
-            }
-            
-            const avgSimilarity = similarities.length > 0 
-                ? similarities.reduce((a, b) => a + b, 0) / similarities.length 
-                : 0;
-            
-            // Word-level voting for better accuracy
-            const allWords = texts.map(text => text.split(/\s+/).filter(w => w.length > 0));
-            const wordFrequency = new Map();
-            
-            // Count word occurrences across all results
-            allWords.forEach((words, idx) => {
-                const confidence = confidences[idx];
-                words.forEach(word => {
-                    const normalizedWord = word.toLowerCase().replace(/[^\w]/g, '');
-                    if (normalizedWord.length > 0) {
-                        if (!wordFrequency.has(normalizedWord)) {
-                            wordFrequency.set(normalizedWord, { count: 0, totalConfidence: 0, original: word });
-                        }
-                        const entry = wordFrequency.get(normalizedWord);
-                        entry.count++;
-                        entry.totalConfidence += confidence;
-                    }
-                });
-            });
-            
-            // Build consensus text from most agreed-upon words
-            const consensusWords = Array.from(wordFrequency.values())
-                .sort((a, b) => {
-                    // Sort by frequency and confidence
-                    const scoreA = a.count * (a.totalConfidence / a.count);
-                    const scoreB = b.count * (b.totalConfidence / b.count);
-                    return scoreB - scoreA;
-                });
-            
-            // Use highest confidence result as base, enhance with consensus
-            const bestResult = successfulResults.reduce((prev, curr) => 
-                curr.confidence > prev.confidence ? curr : prev
-            );
-            
-            // Calculate overall consensus confidence
-            // Weight: 50% from best engine confidence, 30% from similarity, 20% from agreement
-            const maxBonus = (CONFIG.MAX_OCR_ENGINES - 1) * CONFIG.CONSENSUS_AGREEMENT_BONUS_PER_ENGINE;
-            const agreementBonus = Math.min((successfulResults.length - 1) * CONFIG.CONSENSUS_AGREEMENT_BONUS_PER_ENGINE, maxBonus);
-            const similarityWeight = avgSimilarity * 0.3;
-            const confidenceWeight = bestResult.confidence * 0.5;
-            const finalConfidence = Math.min(99, Math.round(confidenceWeight + similarityWeight + agreementBonus));
-            
-            return {
-                confidence: finalConfidence,
-                text: bestResult.text,
-                agreeing: successfulResults.length,
-                similarityScore: Math.round(avgSimilarity)
-            };
+        // Switch between result tabs
+        function switchTab(index) {
+            state.currentTab = index;
+            displayResults();
         }
 
-        // ===========================
-        // UI FUNCTIONS
-        // ===========================
-        
-        function showToast(message, type = 'info') {
-            const icons = {
-                success: '<svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
-                error: '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
-                warning: '<svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
-                info: '<svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
-            };
-            
-            document.getElementById('toastIcon').innerHTML = icons[type];
-            document.getElementById('toastMessage').textContent = message;
-            document.getElementById('toast').classList.remove('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('toast').classList.add('hidden');
-            }, 4000);
+        // Display current result
+        function displayCurrentResult() {
+            const result = state.results[state.currentTab];
+            if (!result) return;
+
+            extractedText.value = result.text;
+            const words = result.text.trim().split(/\s+/).filter(w => w.length > 0);
+            wordCount.textContent = words.length;
         }
 
-        function addAuditEntry(action, details) {
-            const timestamp = new Date().toISOString();
-            state.auditLog.push({timestamp, action, details});
-            updateAuditTrail();
-        }
-
-        function updateAuditTrail() {
-            const container = document.getElementById('auditTrail');
-            container.innerHTML = state.auditLog.map(entry => 
-                `<div>[${new Date(entry.timestamp).toLocaleTimeString()}] ${entry.action}: ${entry.details}</div>`
-            ).join('');
-        }
-
-        // ===========================
-        // EVENT HANDLERS
-        // ===========================
-        
-        const dropZone = document.getElementById('dropZone');
-        const imageInput = document.getElementById('imageInput');
-        const processBtn = document.getElementById('processBtn');
-        
-        dropZone.addEventListener('click', () => imageInput.click());
-        
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('border-medical-500', 'bg-medical-50');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-medical-500', 'bg-medical-50');
-        });
-        
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            dropZone.classList.remove('border-medical-500', 'bg-medical-50');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) handleImageUpload(file);
-        });
-        
-        imageInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) handleImageUpload(file);
-        });
-        
-        function handleImageUpload(file) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = new Image();
-                img.onload = () => {
-                    state.originalImage = img;
-                    state.processedImage = preprocessImage(img);
-                    
-                    // Display images
-                    const origCanvas = document.getElementById('originalCanvas');
-                    const enhCanvas = document.getElementById('enhancedCanvas');
-                    
-                    origCanvas.width = img.width;
-                    origCanvas.height = img.height;
-                    origCanvas.getContext('2d').drawImage(img, 0, 0);
-                    
-                    enhCanvas.width = state.processedImage.width;
-                    enhCanvas.height = state.processedImage.height;
-                    enhCanvas.getContext('2d').drawImage(state.processedImage, 0, 0);
-                    
-                    // Quality check
-                    const {metrics, issues} = assessImageQuality(img);
-                    displayQualityCheck(metrics, issues);
-                    
-                    document.getElementById('previewSection').classList.remove('hidden');
-                    processBtn.classList.remove('hidden');
-                    document.getElementById('qualityCheck').classList.remove('hidden');
-                    
-                    addAuditEntry('Image uploaded', `${file.name} (${metrics.width}x${metrics.height})`);
-                    showToast('Image loaded successfully', 'success');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function displayQualityCheck(metrics, issues) {
-            const container = document.getElementById('qualityResults');
-            const metricsDiv = document.getElementById('imageMetrics');
-            
-            metricsDiv.innerHTML = `
-                <div class="bg-blue-50 p-2 rounded"><div class="text-xs text-gray-600">Width</div><div class="font-semibold text-blue-600">${metrics.width}px</div></div>
-                <div class="bg-purple-50 p-2 rounded"><div class="text-xs text-gray-600">Height</div><div class="font-semibold text-purple-600">${metrics.height}px</div></div>
-                <div class="bg-green-50 p-2 rounded"><div class="text-xs text-gray-600">Resolution</div><div class="font-semibold text-green-600">${(metrics.resolution/1000000).toFixed(1)}MP</div></div>
-                <div class="bg-orange-50 p-2 rounded"><div class="text-xs text-gray-600">Quality</div><div class="font-semibold text-orange-600">${metrics.width >= 1200 ? 'High' : 'Medium'}</div></div>
-            `;
-            
-            if (issues.length > 0) {
-                container.innerHTML = issues.map(issue => `
-                    <div class="flex items-center space-x-2 text-xs ${issue.type === 'warning' ? 'text-yellow-700' : 'text-red-700'}">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span>${issue.message}</span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = '<div class="text-xs text-green-700 flex items-center"><svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Image quality good</div>';
+        // Copy to clipboard
+        async function copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(extractedText.value);
+                showToast('Text copied to clipboard!', 'success');
+            } catch (error) {
+                showToast('Failed to copy text', 'error');
             }
         }
 
-        processBtn.addEventListener('click', async () => {
-            if (!state.processedImage) return;
-            
-            document.getElementById('processingSection').classList.remove('hidden');
-            document.getElementById('resultsSection').classList.add('hidden');
-            
-            const progressContainer = document.getElementById('engineProgress');
-            progressContainer.innerHTML = '';
-            
-            // Run OCR engines
-            state.ocrResults = [];
-            
-            // Count configured engines to calculate progress correctly
-            let totalEngines = 1; // Tesseract is always run
-            if (state.apiKeys.ocrSpace) totalEngines++;
-            if (state.apiKeys.google) totalEngines++;
-            if (state.apiKeys.azure && state.apiKeys.azureEndpoint) totalEngines++;
-            let completedEngines = 0;
-            
-            // Tesseract (Primary - always runs)
-            progressContainer.innerHTML += '<div id="tesseractProgress" class="text-sm"><span class="font-semibold">Tesseract.js:</span> <span class="text-gray-600">Processing...</span></div>';
-            const tesseractResult = await runTesseractOCR(state.processedImage, progress => {
-                document.getElementById('overallProgress').style.width = `${(completedEngines + progress/100) / totalEngines * 100}%`;
-            });
-            state.ocrResults.push(tesseractResult);
-            completedEngines++;
-            document.getElementById('tesseractProgress').innerHTML = `<span class="font-semibold">Tesseract.js:</span> <span class="${tesseractResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${tesseractResult.status === 'success' ? `✓ Complete (${tesseractResult.confidence}%)` : '✗ Failed'}</span>`;
-            document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
-            
-            // OCR.space (Recommended free fallback - runs if configured)
-            if (state.apiKeys.ocrSpace) {
-                progressContainer.innerHTML += '<div id="ocrSpaceProgress" class="text-sm"><span class="font-semibold">OCR.space:</span> <span class="text-gray-600">Processing...</span></div>';
-                const ocrSpaceResult = await runOCRSpaceOCR(state.processedImage);
-                state.ocrResults.push(ocrSpaceResult);
-                completedEngines++;
-                document.getElementById('ocrSpaceProgress').innerHTML = `<span class="font-semibold">OCR.space:</span> <span class="${ocrSpaceResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${ocrSpaceResult.status === 'success' ? `✓ Complete (${ocrSpaceResult.confidence}%)` : '✗ Failed'}</span>`;
-                document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
-            }
-            
-            // Google Vision (if configured)
-            if (state.apiKeys.google) {
-                progressContainer.innerHTML += '<div id="googleProgress" class="text-sm"><span class="font-semibold">Google Vision:</span> <span class="text-gray-600">Processing...</span></div>';
-                const googleResult = await runGoogleVisionOCR(state.processedImage);
-                state.ocrResults.push(googleResult);
-                completedEngines++;
-                document.getElementById('googleProgress').innerHTML = `<span class="font-semibold">Google Vision:</span> <span class="${googleResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${googleResult.status === 'success' ? '✓ Complete' : '✗ Failed'}</span>`;
-                document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
-            }
-            
-            // Azure (if configured)
-            if (state.apiKeys.azure && state.apiKeys.azureEndpoint) {
-                progressContainer.innerHTML += '<div id="azureProgress" class="text-sm"><span class="font-semibold">Azure OCR:</span> <span class="text-gray-600">Processing...</span></div>';
-                const azureResult = await runAzureOCR(state.processedImage);
-                state.ocrResults.push(azureResult);
-                completedEngines++;
-                document.getElementById('azureProgress').innerHTML = `<span class="font-semibold">Azure OCR:</span> <span class="${azureResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${azureResult.status === 'success' ? '✓ Complete' : '✗ Failed'}</span>`;
-            }
-            
-            document.getElementById('overallProgress').style.width = '100%';
-            
-            // Calculate consensus
-            const consensus = calculateConsensus(state.ocrResults);
-            
-            // Apply AI correction if enabled
-            let finalText = consensus.text;
-            let aiCorrectionResult = null;
-            
-            if (state.settings.enableAiCorrection && state.apiKeys.openai && consensus.text) {
-                progressContainer.innerHTML += '<div id="aiProgress" class="text-sm"><span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-purple-600">Processing...</span></div>';
-                
-                aiCorrectionResult = await correctMedicalTermsWithAI(consensus.text);
-                
-                if (aiCorrectionResult.status === 'success') {
-                    finalText = aiCorrectionResult.correctedText;
-                    document.getElementById('aiProgress').innerHTML = `<span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-green-600">✓ Complete (${aiCorrectionResult.improvementScore}% corrections made)</span>`;
-                    addAuditEntry('AI correction applied', `Model: ${aiCorrectionResult.model}, ${aiCorrectionResult.improvementScore}% changes`);
-                } else if (aiCorrectionResult.status === 'error') {
-                    document.getElementById('aiProgress').innerHTML = `<span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-red-600">✗ Failed: ${aiCorrectionResult.error}</span>`;
-                }
-            }
-            
-            // Update consensus with AI-corrected text
-            consensus.text = finalText;
-            consensus.aiCorrected = aiCorrectionResult?.status === 'success';
-            consensus.aiResult = aiCorrectionResult;
-            
-            const validationIssues = validateText(consensus.text);
-            
-            // Display results
-            displayResults(consensus, validationIssues);
-            
-            addAuditEntry('OCR completed', `${state.ocrResults.length} engines, ${consensus.confidence}% confidence`);
-            
-            // Increment stats counter
-            incrementProcessedCount();
-            
-            // Store original text for formatting reset
-            originalExtractedText = consensus.text;
-            
-            // Update word count
-            updateWordCount();
-            
-            setTimeout(() => {
-                document.getElementById('processingSection').classList.add('hidden');
-                document.getElementById('resultsSection').classList.remove('hidden');
-            }, 500);
-        });
-
-        function displayResults(consensus, issues) {
-            // Update text
-            document.getElementById('extractedText').value = consensus.text;
-            
-            // Update metrics
-            document.getElementById('consensusConfidence').textContent = `${consensus.confidence}%`;
-            document.getElementById('enginesAgreeing').textContent = `${consensus.agreeing}/${state.ocrResults.length}`;
-            
-            // Show AI correction status if applied
-            const aiStatusElement = document.getElementById('aiCorrectionStatus');
-            if (consensus.aiCorrected && aiStatusElement) {
-                aiStatusElement.classList.remove('hidden');
-                aiStatusElement.innerHTML = `
-                    <div class="flex items-center space-x-2 text-xs">
-                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded font-semibold">🤖 AI-Enhanced</span>
-                        <span class="text-gray-600">${consensus.aiResult.improvementScore}% corrections applied</span>
-                        <span class="text-gray-500">(${consensus.aiResult.model})</span>
-                    </div>
-                `;
-            } else if (aiStatusElement) {
-                aiStatusElement.classList.add('hidden');
-            }
-            
-            // Calculate validation score
-            const baseScore = consensus.confidence / 10;
-            const issuesPenalty = issues.length * 0.5;
-            const validationScore = Math.max(0, Math.min(10, baseScore - issuesPenalty));
-            document.getElementById('validationScore').textContent = `${validationScore.toFixed(1)}/10`;
-            
-            // Set badge
-            const badge = document.getElementById('overallBadge');
-            if (consensus.confidence >= state.settings.confidenceThreshold && issues.length === 0) {
-                badge.className = 'px-4 py-2 rounded-lg text-white font-semibold shadow-lg badge-success';
-                badge.textContent = 'HIGH CONFIDENCE';
-            } else if (consensus.confidence >= 70) {
-                badge.className = 'px-4 py-2 rounded-lg text-white font-semibold shadow-lg badge-warning';
-                badge.textContent = 'REQUIRES REVIEW';
-            } else {
-                badge.className = 'px-4 py-2 rounded-lg text-white font-semibold shadow-lg badge-critical';
-                badge.textContent = 'MANUAL VERIFICATION REQUIRED';
-            }
-            
-            // Display issues
-            if (issues.length > 0) {
-                const criticalIssues = issues.filter(i => i.type === 'critical');
-                const warningIssues = issues.filter(i => i.type === 'warning');
-                const infoIssues = issues.filter(i => i.type === 'info');
-                
-                let issuesHTML = '';
-                
-                if (criticalIssues.length > 0) {
-                    issuesHTML += '<div class="mb-2"><h5 class="text-xs font-semibold text-red-800 mb-1">🔴 Critical Issues:</h5><ul class="text-sm text-red-700 space-y-1 ml-4 list-disc">';
-                    issuesHTML += criticalIssues.map(i => `<li>${i.message}</li>`).join('');
-                    issuesHTML += '</ul></div>';
-                }
-                
-                if (warningIssues.length > 0) {
-                    issuesHTML += '<div class="mb-2"><h5 class="text-xs font-semibold text-yellow-800 mb-1">⚠️ Warnings:</h5><ul class="text-sm text-yellow-700 space-y-1 ml-4 list-disc">';
-                    issuesHTML += warningIssues.map(i => `<li>${i.message}</li>`).join('');
-                    issuesHTML += '</ul></div>';
-                }
-                
-                if (infoIssues.length > 0) {
-                    issuesHTML += '<div><h5 class="text-xs font-semibold text-blue-800 mb-1">ℹ️ Information:</h5><ul class="text-sm text-blue-700 space-y-1 ml-4 list-disc">';
-                    issuesHTML += infoIssues.map(i => `<li>${i.message}</li>`).join('');
-                    issuesHTML += '</ul></div>';
-                }
-                
-                document.getElementById('highlightedIssues').classList.remove('hidden');
-                document.getElementById('issuesList').innerHTML = issuesHTML;
-            } else {
-                document.getElementById('highlightedIssues').classList.add('hidden');
-            }
-            
-            // Display structured information
-            if (state.extractedInfo && (state.extractedInfo.medicines.length > 0 || 
-                state.extractedInfo.dosages.length > 0 || state.extractedInfo.frequencies.length > 0)) {
-                document.getElementById('structuredInfo').classList.remove('hidden');
-                
-                // Display medicines
-                const medicinesList = document.getElementById('medicinesList');
-                if (state.extractedInfo.medicines.length > 0) {
-                    medicinesList.innerHTML = state.extractedInfo.medicines.map(med => 
-                        `<div class="flex items-center justify-between py-1 border-b border-blue-100 last:border-0">
-                            <span class="font-medium">${med.name}</span>
-                            <span class="text-xs px-2 py-0.5 bg-blue-200 rounded">${med.confidence}%</span>
-                        </div>`
-                    ).join('');
-                } else {
-                    medicinesList.innerHTML = '<div class="text-gray-500 italic">None detected</div>';
-                }
-                
-                // Display dosages
-                const dosagesList = document.getElementById('dosagesList');
-                if (state.extractedInfo.dosages.length > 0) {
-                    dosagesList.innerHTML = state.extractedInfo.dosages.map(dosage => 
-                        `<div class="py-1 border-b border-purple-100 last:border-0">
-                            <span class="font-medium">${dosage.full}</span>
-                        </div>`
-                    ).join('');
-                } else {
-                    dosagesList.innerHTML = '<div class="text-gray-500 italic">None detected</div>';
-                }
-                
-                // Display frequencies
-                const frequenciesList = document.getElementById('frequenciesList');
-                if (state.extractedInfo.frequencies.length > 0) {
-                    frequenciesList.innerHTML = state.extractedInfo.frequencies.map(freq => 
-                        `<div class="py-1 border-b border-green-100 last:border-0">
-                            <span class="font-medium capitalize">${freq}</span>
-                        </div>`
-                    ).join('');
-                } else {
-                    frequenciesList.innerHTML = '<div class="text-gray-500 italic">None detected</div>';
-                }
-            }
-            
-            // Engine comparison table
-            if (state.ocrResults.length > 1) {
-                const compTable = document.getElementById('comparisonTable');
-                compTable.innerHTML = `
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="p-2 text-left">Engine</th>
-                                <th class="p-2 text-left">Status</th>
-                                <th class="p-2 text-left">Confidence</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${state.ocrResults.map(r => `
-                                <tr class="border-t">
-                                    <td class="p-2">${r.engine}</td>
-                                    <td class="p-2">${r.status === 'success' ? '✓ Success' : r.status === 'not_configured' ? 'Not Configured' : '✗ Error'}</td>
-                                    <td class="p-2">${r.confidence || 'N/A'}%</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-                document.getElementById('engineComparison').classList.remove('hidden');
-            }
-        }
-
-        // Copy button
-        document.getElementById('copyBtn').addEventListener('click', async () => {
-            const text = document.getElementById('extractedText').value;
-            await navigator.clipboard.writeText(text);
-            showToast('Text copied to clipboard', 'success');
-        });
-
-        // Download button
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            const text = document.getElementById('extractedText').value;
-            const blob = new Blob([text], {type: 'text/plain'});
+        // Download as text file
+        function downloadText() {
+            const result = state.results[state.currentTab];
+            const blob = new Blob([result.text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `prescription_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = `${result.filename.replace(/\.[^.]+$/, '')}_extracted.txt`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('File downloaded', 'success');
-        });
+            showToast('Text downloaded!', 'success');
+        }
 
-        // New scan
-        document.getElementById('newScanBtn').addEventListener('click', () => {
-            location.reload();
-        });
+        // Clear all
+        function clearAll() {
+            state.files = [];
+            state.results = [];
+            state.currentTab = 0;
+            imageInput.value = '';
+            imagePreview.innerHTML = '';
+            previewSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            processBtn.disabled = true;
+        }
 
-        // Edit mode
-        document.getElementById('editMode').addEventListener('click', () => {
-            const textarea = document.getElementById('extractedText');
-            textarea.readOnly = !textarea.readOnly;
-            if (!textarea.readOnly) {
-                textarea.focus();
-                showToast('Editing enabled - changes will be logged', 'info');
-                addAuditEntry('Manual edit', 'User enabled text editing');
-            }
-        });
+        // Update progress bar
+        function updateProgress(percent, text) {
+            progressBar.style.width = `${percent}%`;
+            progressPercent.textContent = `${Math.round(percent)}%`;
+            progressText.textContent = text;
+        }
 
-        // Verification
-        document.getElementById('verifyBtn').addEventListener('click', () => {
-            document.getElementById('verificationModal').classList.remove('hidden');
-        });
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
 
-        document.getElementById('verificationAgreement').addEventListener('change', e => {
-            document.getElementById('confirmVerification').disabled = !e.target.checked;
-        });
-
-        document.getElementById('confirmVerification').addEventListener('click', () => {
-            const verifier = {
-                name: document.getElementById('verifierName').value,
-                id: document.getElementById('verifierId').value,
-                role: document.getElementById('verifierRole').value
+            const icons = {
+                success: '<svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+                error: '<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
+                warning: '<svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>'
             };
-            
-            if (!verifier.name || !verifier.id || !verifier.role) {
-                showToast('Please fill all verification fields', 'error');
-                return;
-            }
-            
-            addAuditEntry('Verified by professional', `${verifier.name} (${verifier.role}, ID: ${verifier.id})`);
-            document.getElementById('verificationModal').classList.add('hidden');
-            showToast('Prescription verified successfully', 'success');
-            
-            // Update UI to show verified status
-            const badge = document.getElementById('overallBadge');
-            badge.className = 'px-4 py-2 rounded-lg text-white font-semibold shadow-lg bg-gradient-to-r from-green-600 to-green-500';
-            badge.textContent = '✓ VERIFIED';
-        });
 
-        document.getElementById('closeVerificationModal').addEventListener('click', () => {
-            document.getElementById('verificationModal').classList.add('hidden');
-        });
+            toastIcon.innerHTML = icons[type] || icons.info;
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
 
-        // API Configuration
-        document.getElementById('apiConfigBtn').addEventListener('click', () => {
-            document.getElementById('apiModal').classList.remove('hidden');
-            // Load saved keys
-            document.getElementById('googleApiKey').value = state.apiKeys.google;
-            document.getElementById('azureApiKey').value = state.apiKeys.azure;
-            document.getElementById('azureEndpoint').value = state.apiKeys.azureEndpoint;
-            document.getElementById('ocrSpaceApiKey').value = state.apiKeys.ocrSpace;
-            document.getElementById('openaiApiKey').value = state.apiKeys.openai;
-            document.getElementById('enableAiCorrection').checked = state.settings.enableAiCorrection;
-            document.getElementById('openaiModel').value = state.settings.openaiModel;
-        });
-
-        function showApiConfig(type) {
-            document.getElementById('apiConfigBtn').click();
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
         }
 
-        document.getElementById('saveApiConfig').addEventListener('click', () => {
-            state.apiKeys.google = document.getElementById('googleApiKey').value;
-            state.apiKeys.azure = document.getElementById('azureApiKey').value;
-            state.apiKeys.azureEndpoint = document.getElementById('azureEndpoint').value;
-            state.apiKeys.ocrSpace = document.getElementById('ocrSpaceApiKey').value;
-            state.apiKeys.openai = document.getElementById('openaiApiKey').value;
-            
-            // Get AI settings
-            state.settings.enableAiCorrection = document.getElementById('enableAiCorrection').checked;
-            state.settings.openaiModel = document.getElementById('openaiModel').value;
-            
-            // Save to localStorage
-            localStorage.setItem('googleApiKey', state.apiKeys.google);
-            localStorage.setItem('azureApiKey', state.apiKeys.azure);
-            localStorage.setItem('azureEndpoint', state.apiKeys.azureEndpoint);
-            localStorage.setItem('ocrSpaceApiKey', state.apiKeys.ocrSpace);
-            localStorage.setItem('openaiApiKey', state.apiKeys.openai);
-            localStorage.setItem('enableAiCorrection', state.settings.enableAiCorrection);
-            localStorage.setItem('openaiModel', state.settings.openaiModel);
-            
-            // Update status
-            if (state.apiKeys.google) {
-                document.getElementById('googleStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-                document.getElementById('googleStatus').textContent = 'Configured';
-            }
-            
-            if (state.apiKeys.azure && state.apiKeys.azureEndpoint) {
-                document.getElementById('azureStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-                document.getElementById('azureStatus').textContent = 'Configured';
-            }
-            
-            if (state.apiKeys.ocrSpace) {
-                document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-                document.getElementById('ocrSpaceStatus').textContent = 'Configured';
-            }
-            
-            if (state.apiKeys.openai) {
-                document.getElementById('openaiStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-                document.getElementById('openaiStatus').textContent = state.settings.enableAiCorrection ? 'Enabled' : 'Configured';
-            }
-            
-            document.getElementById('apiModal').classList.add('hidden');
-            showToast('API configuration saved', 'success');
-        });
-
-        document.getElementById('closeApiModal').addEventListener('click', () => {
-            document.getElementById('apiModal').classList.add('hidden');
-        });
-
-        // Settings
-        document.getElementById('confidenceThreshold').addEventListener('input', e => {
-            state.settings.confidenceThreshold = parseInt(e.target.value);
-            document.getElementById('thresholdValue').textContent = `${e.target.value}%`;
-        });
-
-        document.getElementById('languageSelect').addEventListener('change', e => {
-            state.settings.language = e.target.value;
-            addAuditEntry('Language changed', `OCR language set to: ${e.target.value}`);
-        });
-
-        document.getElementById('dictCheck').addEventListener('change', e => {
-            state.settings.medicalDictCheck = e.target.checked;
-        });
-
-        document.getElementById('dosageCheck').addEventListener('change', e => {
-            state.settings.dosageValidation = e.target.checked;
-        });
-
-        // Initialize
-        if (state.apiKeys.google) {
-            document.getElementById('googleStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-            document.getElementById('googleStatus').textContent = 'Configured';
+        // Helper function to create FileList
+        function createFileList(files) {
+            const dt = new DataTransfer();
+            files.forEach(file => dt.items.add(file));
+            return dt.files;
         }
-        
-        if (state.apiKeys.azure && state.apiKeys.azureEndpoint) {
-            document.getElementById('azureStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-            document.getElementById('azureStatus').textContent = 'Configured';
-        }
-        
-        if (state.apiKeys.ocrSpace) {
-            document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-            document.getElementById('ocrSpaceStatus').textContent = 'Configured';
-        }
-        
-        if (state.apiKeys.openai) {
-            document.getElementById('openaiStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
-            document.getElementById('openaiStatus').textContent = state.settings.enableAiCorrection ? 'Enabled' : 'Configured';
-        }
-
-        // ===========================
-        // NEW FEATURE: Statistics Counter
-        // ===========================
-        
-        // Initialize stats counter from localStorage
-        let processedCount = parseInt(localStorage.getItem('processedCount')) || 0;
-        document.getElementById('processedCountValue').textContent = processedCount;
-        
-        function incrementProcessedCount() {
-            processedCount++;
-            localStorage.setItem('processedCount', processedCount);
-            document.getElementById('processedCountValue').textContent = processedCount;
-        }
-        
-        // ===========================
-        // NEW FEATURE: Word Count Display
-        // ===========================
-        
-        function updateWordCount() {
-            const text = document.getElementById('extractedText').value;
-            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const chars = text.length;
-            document.getElementById('wordCountValue').textContent = words;
-            document.getElementById('charCountValue').textContent = chars;
-        }
-        
-        // Update word count when text changes
-        document.getElementById('extractedText').addEventListener('input', updateWordCount);
-        
-        // ===========================
-        // NEW FEATURE: Print Function
-        // ===========================
-        
-        document.getElementById('printBtn').addEventListener('click', () => {
-            const text = document.getElementById('extractedText').value;
-            if (!text.trim()) {
-                showToast('No text to print', 'warning');
-                return;
-            }
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>MedReader-SL - Prescription Text</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-                        h1 { color: #0ea5e9; font-size: 24px; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px; }
-                        .content { white-space: pre-wrap; font-size: 14px; margin: 20px 0; }
-                        .footer { font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 30px; }
-                        .warning { background: #fff7ed; border: 1px solid #f97316; padding: 10px; border-radius: 4px; margin: 10px 0; }
-                        @media print { .no-print { display: none; } }
-                    </style>
-                </head>
-                <body>
-                    <h1>MedReader-SL - Extracted Prescription Text</h1>
-                    <div class="warning">⚠️ This text must be verified by a healthcare professional before use.</div>
-                    <div class="content">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')}</div>
-                    <div class="footer">
-                        Generated by MedReader-SL v1.2<br>
-                        Date: ${new Date().toLocaleString()}<br>
-                        <strong>IMPORTANT: Always verify with original prescription</strong>
-                    </div>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-            showToast('Print dialog opened', 'success');
-            addAuditEntry('Print', 'Printed prescription text');
-        });
-        
-        // ===========================
-        // NEW FEATURE: Share Function
-        // ===========================
-        
-        document.getElementById('shareBtn').addEventListener('click', async () => {
-            const text = document.getElementById('extractedText').value;
-            if (!text.trim()) {
-                showToast('No text to share', 'warning');
-                return;
-            }
-            
-            const shareData = {
-                title: 'MedReader-SL - Prescription Text',
-                text: `⚠️ MEDICAL NOTICE: Verify with healthcare professional.\n\n${text}\n\n---\nExtracted by MedReader-SL`
-            };
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                    showToast('Shared successfully', 'success');
-                    addAuditEntry('Share', 'Shared prescription text via Web Share API');
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        showToast('Share failed: ' + err.message, 'error');
-                    }
-                }
-            } else {
-                // Fallback: copy to clipboard
-                try {
-                    await navigator.clipboard.writeText(shareData.text);
-                    showToast('Text copied to clipboard (sharing not supported)', 'info');
-                } catch (err) {
-                    showToast('Share not supported on this device', 'error');
-                }
-            }
-        });
-        
-        // ===========================
-        // NEW FEATURE: Text Formatting
-        // ===========================
-        
-        // Store original text for reset
-        let originalExtractedText = '';
-        
-        document.getElementById('formatBtn').addEventListener('click', () => {
-            const formatOptions = document.getElementById('formatOptions');
-            formatOptions.classList.toggle('hidden');
-            
-            // Store original text when first opening format options
-            if (!originalExtractedText) {
-                originalExtractedText = document.getElementById('extractedText').value;
-            }
-        });
-        
-        function formatText(action) {
-            const textarea = document.getElementById('extractedText');
-            let text = textarea.value;
-            
-            switch (action) {
-                case 'removeExtraSpaces':
-                    text = text.replace(/  +/g, ' ').replace(/\n\s*\n/g, '\n\n').trim();
-                    break;
-                case 'uppercase':
-                    text = text.toUpperCase();
-                    break;
-                case 'lowercase':
-                    text = text.toLowerCase();
-                    break;
-                case 'capitalize':
-                    text = text.replace(/\b\w/g, char => char.toUpperCase());
-                    break;
-                case 'removeLineBreaks':
-                    text = text.replace(/\n/g, ' ').replace(/  +/g, ' ');
-                    break;
-                case 'reset':
-                    text = originalExtractedText || text;
-                    break;
-            }
-            
-            textarea.value = text;
-            updateWordCount();
-            addAuditEntry('Text formatted', `Applied: ${action}`);
-            showToast(`Text formatted: ${action}`, 'success');
-        }
-        
-        // Make formatText available globally
-        window.formatText = formatText;
-        
-        // ===========================
-        // NEW FEATURE: Clear All
-        // ===========================
-        
-        document.getElementById('clearAllBtn').addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear all data and start fresh?')) {
-                // Reset state
-                state.originalImage = null;
-                state.processedImage = null;
-                state.ocrResults = [];
-                state.extractedInfo = {medicines: [], dosages: [], frequencies: []};
-                state.auditLog = [];
-                originalExtractedText = '';
-                
-                // Hide sections
-                document.getElementById('previewSection').classList.add('hidden');
-                document.getElementById('processingSection').classList.add('hidden');
-                document.getElementById('resultsSection').classList.add('hidden');
-                document.getElementById('processBtn').classList.add('hidden');
-                document.getElementById('qualityCheck').classList.add('hidden');
-                document.getElementById('formatOptions').classList.add('hidden');
-                
-                // Clear canvases
-                const origCanvas = document.getElementById('originalCanvas');
-                const enhCanvas = document.getElementById('enhancedCanvas');
-                origCanvas.getContext('2d').clearRect(0, 0, origCanvas.width, origCanvas.height);
-                enhCanvas.getContext('2d').clearRect(0, 0, enhCanvas.width, enhCanvas.height);
-                
-                // Clear text
-                document.getElementById('extractedText').value = '';
-                document.getElementById('wordCountValue').textContent = '0';
-                document.getElementById('charCountValue').textContent = '0';
-                
-                // Clear file input
-                document.getElementById('imageInput').value = '';
-                
-                // Clear audit trail
-                document.getElementById('auditTrail').innerHTML = '';
-                
-                showToast('All data cleared', 'success');
-            }
-        });
-        
-        // ===========================
-        // NEW FEATURE: Remove Image
-        // ===========================
-        
-        document.getElementById('removeImageBtn').addEventListener('click', () => {
-            // Reset image state
-            state.originalImage = null;
-            state.processedImage = null;
-            originalExtractedText = '';
-            
-            // Hide preview section
-            document.getElementById('previewSection').classList.add('hidden');
-            document.getElementById('processBtn').classList.add('hidden');
-            document.getElementById('qualityCheck').classList.add('hidden');
-            
-            // Clear canvases
-            const origCanvas = document.getElementById('originalCanvas');
-            const enhCanvas = document.getElementById('enhancedCanvas');
-            origCanvas.getContext('2d').clearRect(0, 0, origCanvas.width, origCanvas.height);
-            enhCanvas.getContext('2d').clearRect(0, 0, enhCanvas.width, enhCanvas.height);
-            
-            // Clear file input
-            document.getElementById('imageInput').value = '';
-            
-            addAuditEntry('Image removed', 'User removed uploaded image');
-            showToast('Image removed', 'info');
-        });
-        
-        // ===========================
-        // NEW FEATURE: Info Modal
-        // ===========================
-        
-        document.getElementById('infoBtn').addEventListener('click', () => {
-            document.getElementById('infoModal').classList.remove('hidden');
-        });
-        
-        document.getElementById('closeInfoModal').addEventListener('click', () => {
-            document.getElementById('infoModal').classList.add('hidden');
-        });
-        
-        document.getElementById('closeInfoModalBtn').addEventListener('click', () => {
-            document.getElementById('infoModal').classList.add('hidden');
-        });
-        
-        // ===========================
-        // NEW FEATURE: Privacy Modal
-        // ===========================
-        
-        document.getElementById('privacyBtn').addEventListener('click', () => {
-            document.getElementById('privacyModal').classList.remove('hidden');
-        });
-        
-        document.getElementById('closePrivacyModal').addEventListener('click', () => {
-            document.getElementById('privacyModal').classList.add('hidden');
-        });
-        
-        document.getElementById('closePrivacyModalBtn').addEventListener('click', () => {
-            document.getElementById('privacyModal').classList.add('hidden');
-        });
-        
-        // Close modals when clicking outside
-        document.getElementById('infoModal').addEventListener('click', (e) => {
-            if (e.target.id === 'infoModal') {
-                document.getElementById('infoModal').classList.add('hidden');
-            }
-        });
-        
-        document.getElementById('privacyModal').addEventListener('click', (e) => {
-            if (e.target.id === 'privacyModal') {
-                document.getElementById('privacyModal').classList.add('hidden');
-            }
-        });
-
-        // Prevent default drag
-        document.addEventListener('dragover', e => e.preventDefault());
-        document.addEventListener('drop', e => e.preventDefault());
     </script>
+
 </body>
 </html>
-
