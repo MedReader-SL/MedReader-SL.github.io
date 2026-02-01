@@ -61,8 +61,10 @@
             resultDiv.innerHTML = `${result.passed ? '✅' : '❌'} <strong>${testName}</strong>: ${result.message}`;
             categoryDiv.appendChild(resultDiv);
             
-            results[category.toLowerCase().replace(/[^a-z]/g, '')] = results[category.toLowerCase().replace(/[^a-z]/g, '')] || [];
-            results[category.toLowerCase().replace(/[^a-z]/g, '')].push(result);
+            // Helper function to normalize category key
+            const categoryKey = category.toLowerCase().replace(/[^a-z]/g, '');
+            results[categoryKey] = results[categoryKey] || [];
+            results[categoryKey].push(result);
         }
 
         // Test: Check HTML Structure
@@ -374,11 +376,13 @@
             
             const summaryDiv = document.createElement('div');
             summaryDiv.className = `summary ${failed === 0 ? 'all-pass' : 'has-fails'}`;
+            const passedPercent = total > 0 ? Math.round(passed/total*100) : 0;
+            const failedPercent = total > 0 ? Math.round(failed/total*100) : 0;
             summaryDiv.innerHTML = `
                 <h2>Test Summary</h2>
                 <p>Total Tests: ${total}</p>
-                <p>Passed: ${passed} (${Math.round(passed/total*100)}%)</p>
-                <p>Failed: ${failed} (${Math.round(failed/total*100)}%)</p>
+                <p>Passed: ${passed} (${passedPercent}%)</p>
+                <p>Failed: ${failed} (${failedPercent}%)</p>
             `;
             output.appendChild(summaryDiv);
         }
