@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedReader-SL Functionality Tests</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-suite { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .pending { background: #fff3cd; color: #856404; }
+        h1 { color: #333; }
+        h2 { color: #555; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .summary { font-size: 18px; font-weight: bold; margin-top: 20px; padding: 15px; border-radius: 8px; }
+        .summary.all-pass { background: #28a745; color: white; }
+        .summary.has-fails { background: #dc3545; color: white; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        #testOutput { max-height: 600px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🏥 MedReader-SL Functionality Test Suite</h1>
+    <p>This page tests the functionality of MedReader-SL application features.</p>
+    
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="location.reload()">Reset Tests</button>
+    
+    <div id="testOutput"></div>
+    
+    <script>
+        // Test results storage
+        const results = {
+            mustHave: [],
+            niceToHave: [],
+            ui: [],
+            functionality: []
+        };
+
+        // Helper functions
+        function assert(condition, message) {
+            return { passed: condition, message };
+        }
+
+        function displayResult(category, testName, result) {
+            const output = document.getElementById('testOutput');
+            let categoryDiv = document.getElementById(`cat-${category}`);
+            
+            if (!categoryDiv) {
+                categoryDiv = document.createElement('div');
+                categoryDiv.id = `cat-${category}`;
+                categoryDiv.className = 'test-suite';
+                categoryDiv.innerHTML = `<h2>${category}</h2>`;
+                output.appendChild(categoryDiv);
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.passed ? 'pass' : 'fail'}`;
+            resultDiv.innerHTML = `${result.passed ? '✅' : '❌'} <strong>${testName}</strong>: ${result.message}`;
+            categoryDiv.appendChild(resultDiv);
+            
+            results[category.toLowerCase().replace(/[^a-z]/g, '')] = results[category.toLowerCase().replace(/[^a-z]/g, '')] || [];
+            results[category.toLowerCase().replace(/[^a-z]/g, '')].push(result);
+        }
+
+        // Test: Check HTML Structure
+        function testHTMLStructure() {
+            const tests = [
+                { name: 'Has Header', check: () => document.querySelector('header') !== null },
+                { name: 'Has Main Content', check: () => document.querySelector('main') !== null },
+                { name: 'Has Upload Zone', check: () => document.getElementById('dropZone') !== null },
+                { name: 'Has Process Button', check: () => document.getElementById('processBtn') !== null },
+                { name: 'Has Results Section', check: () => document.getElementById('resultsSection') !== null },
+                { name: 'Has API Config Modal', check: () => document.getElementById('apiModal') !== null },
+                { name: 'Has Verification Modal', check: () => document.getElementById('verificationModal') !== null },
+                { name: 'Has Toast Notification', check: () => document.getElementById('toast') !== null },
+            ];
+            
+            return tests;
+        }
+
+        // Test: Must-Have Features
+        function testMustHaveFeatures() {
+            return [
+                { 
+                    name: 'Image Upload Support', 
+                    check: () => {
+                        const input = document.getElementById('imageInput');
+                        return input && input.accept.includes('image');
+                    }
+                },
+                { 
+                    name: 'Image Preview Canvas', 
+                    check: () => document.getElementById('originalCanvas') !== null && document.getElementById('enhancedCanvas') !== null
+                },
+                { 
+                    name: 'OCR Processing Function', 
+                    check: () => typeof window.runTesseractOCR === 'function' || document.querySelector('script').textContent.includes('runTesseractOCR')
+                },
+                { 
+                    name: 'Progress Bar Element', 
+                    check: () => document.getElementById('overallProgress') !== null
+                },
+                { 
+                    name: 'Text Output Area', 
+                    check: () => document.getElementById('extractedText') !== null
+                },
+                { 
+                    name: 'Copy Button', 
+                    check: () => document.getElementById('copyBtn') !== null
+                },
+                { 
+                    name: 'Download Button', 
+                    check: () => document.getElementById('downloadBtn') !== null
+                },
+                { 
+                    name: 'Responsive Meta Tag', 
+                    check: () => document.querySelector('meta[name="viewport"]') !== null
+                },
+                { 
+                    name: 'Medical Disclaimer Banner', 
+                    check: () => document.body.textContent.includes('MEDICAL NOTICE')
+                },
+                { 
+                    name: 'AI Correction Support', 
+                    check: () => document.body.innerHTML.includes('OpenAI') || document.body.innerHTML.includes('AI Correction')
+                },
+            ];
+        }
+
+        // Test: Nice-to-Have Features
+        function testNiceToHaveFeatures() {
+            return [
+                { 
+                    name: 'Drag & Drop Upload', 
+                    check: () => {
+                        const dropZone = document.getElementById('dropZone');
+                        return dropZone !== null;
+                    }
+                },
+                { 
+                    name: 'Camera Capture Support', 
+                    check: () => {
+                        const input = document.getElementById('imageInput');
+                        return input && (input.capture !== undefined || input.accept === 'image/*');
+                    }
+                },
+                { 
+                    name: 'Multi-Language Selection', 
+                    check: () => {
+                        const select = document.getElementById('languageSelect');
+                        return select && select.options.length > 1;
+                    }
+                },
+                { 
+                    name: 'Confidence Threshold Slider', 
+                    check: () => document.getElementById('confidenceThreshold') !== null
+                },
+                { 
+                    name: 'Medical Dictionary Check Toggle', 
+                    check: () => document.getElementById('dictCheck') !== null
+                },
+                { 
+                    name: 'Dosage Validation Toggle', 
+                    check: () => document.getElementById('dosageCheck') !== null
+                },
+                { 
+                    name: 'Print Function', 
+                    check: () => document.getElementById('printBtn') !== null
+                },
+                { 
+                    name: 'Share Function', 
+                    check: () => document.getElementById('shareBtn') !== null
+                },
+                { 
+                    name: 'Word Count Display', 
+                    check: () => document.getElementById('wordCount') !== null
+                },
+                { 
+                    name: 'Statistics Counter', 
+                    check: () => document.getElementById('statsCounter') !== null || localStorage.getItem('processedCount') !== null
+                },
+                { 
+                    name: 'Text Formatting Options', 
+                    check: () => document.getElementById('formatBtn') !== null || document.querySelector('[id*="format"]') !== null
+                },
+                { 
+                    name: 'Clear All Button', 
+                    check: () => document.getElementById('clearAllBtn') !== null
+                },
+                { 
+                    name: 'Image Remove Option', 
+                    check: () => document.querySelector('.remove-image-btn') !== null || document.body.innerHTML.includes('removeImage')
+                },
+                { 
+                    name: 'Info Modal', 
+                    check: () => document.getElementById('infoModal') !== null
+                },
+                { 
+                    name: 'Privacy Modal', 
+                    check: () => document.getElementById('privacyModal') !== null
+                },
+                { 
+                    name: 'Edit Mode Toggle', 
+                    check: () => document.getElementById('editMode') !== null
+                },
+                { 
+                    name: 'Verification System', 
+                    check: () => document.getElementById('verifyBtn') !== null
+                },
+                { 
+                    name: 'Audit Trail', 
+                    check: () => document.getElementById('auditTrail') !== null
+                },
+                { 
+                    name: 'Structured Information Display', 
+                    check: () => document.getElementById('structuredInfo') !== null
+                },
+                { 
+                    name: 'Engine Comparison Table', 
+                    check: () => document.getElementById('engineComparison') !== null
+                },
+            ];
+        }
+
+        // Test: UI/UX Features
+        function testUIFeatures() {
+            return [
+                { 
+                    name: 'Glass Morphism Effect', 
+                    check: () => document.querySelector('.glass-effect') !== null
+                },
+                { 
+                    name: 'Gradient Background', 
+                    check: () => document.querySelector('.gradient-bg') !== null
+                },
+                { 
+                    name: 'Fade-in Animations', 
+                    check: () => document.querySelector('.animate-fade-in') !== null || document.body.innerHTML.includes('fadeIn')
+                },
+                { 
+                    name: 'Toast Notification System', 
+                    check: () => document.getElementById('toast') !== null
+                },
+                { 
+                    name: 'Badge System', 
+                    check: () => document.querySelector('.badge-success') !== null || document.querySelector('.badge-warning') !== null || document.body.innerHTML.includes('badge-')
+                },
+                { 
+                    name: 'Mobile Responsive', 
+                    check: () => document.body.innerHTML.includes('md:') || document.body.innerHTML.includes('lg:') || document.body.innerHTML.includes('@media')
+                },
+            ];
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('testOutput').innerHTML = '<p>Running tests...</p>';
+            
+            // Load the main page in an iframe or fetch it
+            try {
+                const response = await fetch('../index.html');
+                const html = await response.text();
+                
+                // Create a temporary container to parse the HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Override document for testing
+                const testDocument = doc;
+                
+                document.getElementById('testOutput').innerHTML = '';
+                
+                // Run structure tests
+                const structureTests = [
+                    { name: 'Has Header', check: () => testDocument.querySelector('header') !== null },
+                    { name: 'Has Main Content', check: () => testDocument.querySelector('main') !== null },
+                    { name: 'Has Upload Zone', check: () => testDocument.getElementById('dropZone') !== null },
+                    { name: 'Has Process Button', check: () => testDocument.getElementById('processBtn') !== null },
+                    { name: 'Has Results Section', check: () => testDocument.getElementById('resultsSection') !== null },
+                    { name: 'Has API Config Modal', check: () => testDocument.getElementById('apiModal') !== null },
+                    { name: 'Has Verification Modal', check: () => testDocument.getElementById('verificationModal') !== null },
+                    { name: 'Has Toast Notification', check: () => testDocument.getElementById('toast') !== null },
+                ];
+                
+                structureTests.forEach(test => {
+                    const result = assert(test.check(), test.check() ? 'Element found' : 'Element NOT found');
+                    displayResult('HTML Structure', test.name, result);
+                });
+                
+                // Run must-have tests
+                const mustHaveTests = [
+                    { name: 'Image Upload Support', check: () => testDocument.getElementById('imageInput')?.accept?.includes('image') },
+                    { name: 'Image Preview Canvas', check: () => testDocument.getElementById('originalCanvas') !== null && testDocument.getElementById('enhancedCanvas') !== null },
+                    { name: 'OCR Processing Function', check: () => html.includes('runTesseractOCR') },
+                    { name: 'Progress Bar Element', check: () => testDocument.getElementById('overallProgress') !== null },
+                    { name: 'Text Output Area', check: () => testDocument.getElementById('extractedText') !== null },
+                    { name: 'Copy Button', check: () => testDocument.getElementById('copyBtn') !== null },
+                    { name: 'Download Button', check: () => testDocument.getElementById('downloadBtn') !== null },
+                    { name: 'Responsive Meta Tag', check: () => testDocument.querySelector('meta[name="viewport"]') !== null },
+                    { name: 'Medical Disclaimer Banner', check: () => html.includes('MEDICAL NOTICE') },
+                    { name: 'AI Correction Support', check: () => html.includes('correctMedicalTermsWithAI') },
+                    { name: 'Multi-Engine OCR', check: () => html.includes('runGoogleVisionOCR') && html.includes('runAzureOCR') && html.includes('runOCRSpaceOCR') },
+                    { name: 'Medical Dictionary', check: () => html.includes('MEDICAL_DICTIONARY') },
+                    { name: 'Image Preprocessing', check: () => html.includes('preprocessImage') },
+                ];
+                
+                mustHaveTests.forEach(test => {
+                    const result = assert(test.check(), test.check() ? 'Feature implemented' : 'Feature MISSING');
+                    displayResult('Must-Have Features', test.name, result);
+                });
+                
+                // Run nice-to-have tests
+                const niceToHaveTests = [
+                    { name: 'Drag & Drop Upload', check: () => html.includes('dragover') && html.includes('drop') },
+                    { name: 'Camera Capture Support', check: () => testDocument.getElementById('imageInput')?.accept === 'image/*' },
+                    { name: 'Multi-Language Selection', check: () => testDocument.getElementById('languageSelect')?.options?.length > 1 },
+                    { name: 'Confidence Threshold Slider', check: () => testDocument.getElementById('confidenceThreshold') !== null },
+                    { name: 'Medical Dictionary Check Toggle', check: () => testDocument.getElementById('dictCheck') !== null },
+                    { name: 'Dosage Validation Toggle', check: () => testDocument.getElementById('dosageCheck') !== null },
+                    { name: 'Print Function', check: () => testDocument.getElementById('printBtn') !== null },
+                    { name: 'Share Function', check: () => testDocument.getElementById('shareBtn') !== null },
+                    { name: 'Word Count Display', check: () => testDocument.getElementById('wordCount') !== null },
+                    { name: 'Statistics Counter', check: () => html.includes('processedCount') || html.includes('statsCounter') },
+                    { name: 'Text Formatting Options', check: () => testDocument.getElementById('formatBtn') !== null || html.includes('formatText') },
+                    { name: 'Clear All Button', check: () => testDocument.getElementById('clearAllBtn') !== null },
+                    { name: 'Image Remove Option', check: () => html.includes('removeImage') || testDocument.querySelector('.remove-image-btn') !== null },
+                    { name: 'Info Modal', check: () => testDocument.getElementById('infoModal') !== null },
+                    { name: 'Privacy Modal', check: () => testDocument.getElementById('privacyModal') !== null },
+                    { name: 'Edit Mode Toggle', check: () => testDocument.getElementById('editMode') !== null },
+                    { name: 'Verification System', check: () => testDocument.getElementById('verifyBtn') !== null },
+                    { name: 'Audit Trail', check: () => testDocument.getElementById('auditTrail') !== null },
+                    { name: 'Structured Information Display', check: () => testDocument.getElementById('structuredInfo') !== null },
+                    { name: 'Engine Comparison Table', check: () => testDocument.getElementById('engineComparison') !== null },
+                ];
+                
+                niceToHaveTests.forEach(test => {
+                    const result = assert(test.check(), test.check() ? 'Feature implemented' : 'Feature MISSING');
+                    displayResult('Nice-to-Have Features', test.name, result);
+                });
+                
+                // Run UI tests
+                const uiTests = [
+                    { name: 'Glass Morphism Effect', check: () => html.includes('glass-effect') },
+                    { name: 'Gradient Background', check: () => html.includes('gradient-bg') },
+                    { name: 'Fade-in Animations', check: () => html.includes('fadeIn') || html.includes('animate-fade-in') },
+                    { name: 'Toast Notification System', check: () => html.includes('showToast') },
+                    { name: 'Badge System', check: () => html.includes('badge-success') || html.includes('badge-warning') },
+                    { name: 'Mobile Responsive (Tailwind)', check: () => html.includes('md:') && html.includes('lg:') },
+                    { name: 'Custom Styling', check: () => testDocument.querySelector('style') !== null },
+                ];
+                
+                uiTests.forEach(test => {
+                    const result = assert(test.check(), test.check() ? 'Feature implemented' : 'Feature MISSING');
+                    displayResult('UI/UX Features', test.name, result);
+                });
+                
+                // Display summary
+                displaySummary();
+                
+            } catch (error) {
+                document.getElementById('testOutput').innerHTML = `<div class="test-result fail">Error loading test: ${error.message}</div>`;
+            }
+        }
+
+        function displaySummary() {
+            const output = document.getElementById('testOutput');
+            const allResults = document.querySelectorAll('.test-result');
+            const passed = document.querySelectorAll('.test-result.pass').length;
+            const failed = document.querySelectorAll('.test-result.fail').length;
+            const total = allResults.length;
+            
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = `summary ${failed === 0 ? 'all-pass' : 'has-fails'}`;
+            summaryDiv.innerHTML = `
+                <h2>Test Summary</h2>
+                <p>Total Tests: ${total}</p>
+                <p>Passed: ${passed} (${Math.round(passed/total*100)}%)</p>
+                <p>Failed: ${failed} (${Math.round(failed/total*100)}%)</p>
+            `;
+            output.appendChild(summaryDiv);
+        }
+
+        // Auto-run tests on load
+        window.onload = () => {
+            setTimeout(runAllTests, 500);
+        };
+    </script>
+</body>
+</html>
