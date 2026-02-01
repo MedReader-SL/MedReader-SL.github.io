@@ -35,7 +35,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">MedReader-SL</h1>
-                        <p class="text-xs text-gray-600">GPT-4 Enhanced Medical OCR</p>
+                        <p class="text-xs text-gray-600">GPT-4 Turbo Enhanced Medical OCR</p>
                     </div>
                 </div>
             </div>
@@ -174,6 +174,10 @@
         const OCR_TIMEOUT = 60000; // 60 seconds timeout for OCR
         const API_TIMEOUT = 30000; // 30 seconds timeout for API calls
         const MAX_API_RETRIES = 3; // Maximum retry attempts for API failures
+        const BLOB_CLEANUP_DELAY = 100; // Delay before revoking blob URL (browser compatibility)
+        
+        // AI System Prompt - Defines behavior of medical OCR correction
+        const AI_SYSTEM_PROMPT = 'You are a medical OCR correction assistant. Fix OCR errors in medical prescriptions, correct medication names, dosages, and medical terms. Preserve the original structure and format. Only fix obvious errors, do not add information. Return only the corrected text without any explanations.';
 
         // State
         const state = {
@@ -454,7 +458,7 @@
                         model: OPENAI_MODEL,
                         messages: [{
                             role: 'system',
-                            content: 'You are a medical OCR correction assistant. Fix OCR errors in medical prescriptions, correct medication names, dosages, and medical terms. Preserve the original structure and format. Only fix obvious errors, do not add information. Return only the corrected text without any explanations.'
+                            content: AI_SYSTEM_PROMPT
                         }, {
                             role: 'user',
                             content: `Please correct any OCR errors in this medical prescription text:\n\n${text}`
@@ -550,8 +554,8 @@
                     tab.onclick = () => {
                         state.currentTab = index;
                         displayCurrentResult();
-                        // Update tabs visual state
-                        displayResults();
+                        // Update tab active states only
+                        updateTabStates();
                     };
                     resultsTabs.appendChild(tab);
                 });
@@ -561,6 +565,17 @@
             }
 
             displayCurrentResult();
+        }
+
+        // Update tab visual states without re-rendering
+        function updateTabStates() {
+            const tabs = resultsTabs.querySelectorAll('button');
+            tabs.forEach((tab, index) => {
+                const isActive = index === state.currentTab;
+                const result = state.results[index];
+                const errorClass = result.isError ? 'border-2 border-red-500' : '';
+                tab.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${errorClass} ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+            });
         }
 
         // Display current result
@@ -635,8 +650,8 @@
                 a.click();
                 document.body.removeChild(a);
                 
-                // Clean up blob URL
-                setTimeout(() => URL.revokeObjectURL(url), 100);
+                // Clean up blob URL after short delay for browser compatibility
+                setTimeout(() => URL.revokeObjectURL(url), BLOB_CLEANUP_DELAY);
                 
                 showToast('Text downloaded!', 'success');
             } catch (error) {
