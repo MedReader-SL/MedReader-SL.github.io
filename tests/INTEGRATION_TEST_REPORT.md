@@ -14,8 +14,11 @@ The OpenAI API key provided by the user has been successfully integrated into th
 **Change**: Replaced the old API key with the new one provided:
 
 ```javascript
+// ⚠️ SECURITY WARNING: API key is exposed in client-side code for demo use only
 const OPENAI_API_KEY = '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';
 ```
+
+**Note**: The API key is intentionally embedded in client-side code as this is a client-side application. This is suitable for personal/demo use only. For production deployment, implement a backend proxy server.
 
 ### 2. Configuration Details
 - **Model**: GPT-4 Turbo (`gpt-4-turbo`)

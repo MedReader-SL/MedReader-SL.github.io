@@ -1,6 +1,10 @@
 /**
  * Test script to verify OpenAI API key integration
  * This script tests the API key functionality independently
+ * 
+ * ⚠️ SECURITY WARNING: API key is hardcoded for demo/testing purposes only
+ * This matches the client-side implementation where the key must be embedded
+ * For production use, implement a backend proxy server instead
  */
 
 const OPENAI_API_KEY = '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';
