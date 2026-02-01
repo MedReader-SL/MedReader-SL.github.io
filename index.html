@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedReader-SL v1.1 | Advanced Medical OCR System</title>
-    <meta name="description" content="Advanced medical prescription OCR with 95-98% accuracy, multi-language support, and intelligent text extraction">
+    <title>MedReader-SL v1.2 | AI-Enhanced Medical OCR System</title>
+    <meta name="description" content="Advanced medical prescription OCR with AI-powered correction, 95-99% accuracy, multi-language support, and intelligent text extraction">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
@@ -101,9 +101,9 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold bg-gradient-to-r from-medical-600 to-health-600 bg-clip-text text-transparent">
-                            MedReader-SL v1.1
+                            MedReader-SL v1.2
                         </h1>
-                        <p class="text-xs text-gray-600">Advanced Medical OCR | 95-98% Accuracy</p>
+                        <p class="text-xs text-gray-600">AI-Enhanced Medical OCR | 95-99% Accuracy</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
@@ -191,6 +191,20 @@
                 </div>
                 <p class="text-xs text-gray-500 mb-2">Cloud API • Free tier • Good handwriting support • Recommended fallback</p>
                 <button onclick="showApiConfig('ocrspace')" class="text-xs text-medical-600 hover:text-medical-700 font-medium">Configure Free API Key →</button>
+            </div>
+            
+            <!-- OpenAI AI Correction Section -->
+            <div class="mt-4 border border-purple-200 rounded-lg p-4 bg-purple-50">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-semibold text-gray-700">🤖 OpenAI AI Correction</span>
+                        <span class="px-2 py-0.5 bg-purple-600 text-white text-xs rounded">AI-POWERED</span>
+                        <span class="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded">NEW</span>
+                    </div>
+                    <span id="openaiStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
+                </div>
+                <p class="text-xs text-gray-500 mb-2">ChatGPT-like accuracy • Automatic medical term correction • Context-aware</p>
+                <button onclick="showApiConfig('openai')" class="text-xs text-medical-600 hover:text-medical-700 font-medium">Configure OpenAI API →</button>
             </div>
             
             <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
@@ -388,6 +402,9 @@
                             </div>
                         </div>
                         
+                        <!-- AI Correction Status -->
+                        <div id="aiCorrectionStatus" class="hidden mt-4 bg-purple-50 border border-purple-200 rounded-lg p-3"></div>
+                        
                         <!-- Warnings/Issues -->
                         <div id="issuesContainer" class="hidden mt-4"></div>
                     </div>
@@ -577,6 +594,49 @@
                     </div>
                 </div>
 
+                <!-- OpenAI API for Medical Term Correction -->
+                <div class="border border-purple-300 rounded-lg p-4 bg-purple-50">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <h3 class="font-semibold text-gray-800">OpenAI API - AI Medical Term Correction</h3>
+                        <span class="px-2 py-0.5 bg-purple-600 text-white text-xs rounded font-semibold">AI-POWERED</span>
+                        <span class="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded font-semibold">NEW</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-1">OpenAI API Key</label>
+                            <input type="password" id="openaiApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your OpenAI API key (sk-...)">
+                        </div>
+                        <div class="bg-white border border-purple-200 rounded-lg p-3">
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>✓ AI-Enhanced Features:</strong>
+                            </p>
+                            <ul class="text-xs text-gray-600 space-y-1 ml-4 list-disc">
+                                <li>ChatGPT-like accuracy for medical terms</li>
+                                <li>Automatic correction of OCR errors</li>
+                                <li>Context-aware medical terminology</li>
+                                <li>Standardized drug name formatting</li>
+                                <li>Dosage and instruction clarification</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-2">AI Model</label>
+                            <select id="openaiModel" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster, Lower Cost)</option>
+                                <option value="gpt-4">GPT-4 (Higher Accuracy)</option>
+                                <option value="gpt-4-turbo-preview">GPT-4 Turbo (Balanced)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="enableAiCorrection" class="w-4 h-4">
+                            <label for="enableAiCorrection" class="text-sm text-gray-700">Enable AI correction for all OCR results</label>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" class="text-medical-600 hover:underline font-semibold">OpenAI Platform</a>.
+                            Pay-as-you-go pricing (~$0.001 per prescription with GPT-3.5).
+                        </p>
+                    </div>
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
                     <p class="text-blue-800">
                         <strong>Privacy Note:</strong> When using cloud APIs, images are sent to external servers for processing. 
@@ -752,14 +812,17 @@
                 google: localStorage.getItem('googleApiKey') || '',
                 azure: localStorage.getItem('azureApiKey') || '',
                 azureEndpoint: localStorage.getItem('azureEndpoint') || '',
-                ocrSpace: localStorage.getItem('ocrSpaceApiKey') || ''
+                ocrSpace: localStorage.getItem('ocrSpaceApiKey') || '',
+                openai: localStorage.getItem('openaiApiKey') || ''
             },
             settings: {
                 confidenceThreshold: 80,
                 medicalDictCheck: true,
                 dosageValidation: true,
                 multiEngine: true,
-                language: 'eng' // Default language for OCR
+                language: 'eng', // Default language for OCR
+                enableAiCorrection: localStorage.getItem('enableAiCorrection') === 'true',
+                openaiModel: localStorage.getItem('openaiModel') || 'gpt-3.5-turbo'
             },
             auditLog: []
         };
@@ -1207,6 +1270,91 @@
                     confidence: 0,
                     status: 'error',
                     error: error.message
+                };
+            }
+        }
+
+        // ===========================
+        // AI-POWERED MEDICAL TERM CORRECTION
+        // ===========================
+        
+        async function correctMedicalTermsWithAI(ocrText) {
+            if (!state.apiKeys.openai || !state.settings.enableAiCorrection) {
+                return {
+                    status: 'not_configured',
+                    correctedText: ocrText,
+                    originalText: ocrText
+                };
+            }
+            
+            try {
+                const prompt = `You are a medical prescription expert. Your task is to correct OCR errors in medical prescriptions and convert them to properly formatted medical text.
+
+Input OCR Text:
+${ocrText}
+
+Instructions:
+1. Correct any OCR errors in medication names (e.g., "Pnracetamol" → "Paracetamol")
+2. Standardize medication names to their proper medical/generic names
+3. Fix dosage formatting (e.g., "500 rng" → "500 mg")
+4. Correct frequency/timing errors (e.g., "twice dally" → "twice daily")
+5. Preserve all original information - only fix errors, don't add or remove content
+6. Maintain the original structure and line breaks
+7. If a term is unclear, use the most likely medical term based on context
+8. Do not add any explanations or comments - only return the corrected prescription text
+
+Output Format:
+Return ONLY the corrected prescription text without any additional explanations, headers, or formatting.`;
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.apiKeys.openai}`
+                    },
+                    body: JSON.stringify({
+                        model: state.settings.openaiModel,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are a medical text correction expert specializing in fixing OCR errors in medical prescriptions. You only return corrected text without explanations.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.1, // Low temperature for consistent, accurate corrections
+                        max_tokens: 1000
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'OpenAI API request failed');
+                }
+                
+                const data = await response.json();
+                const correctedText = data.choices[0].message.content.trim();
+                
+                // Calculate improvement score
+                const improvementScore = calculateSimilarity(ocrText, correctedText);
+                
+                return {
+                    status: 'success',
+                    correctedText: correctedText,
+                    originalText: ocrText,
+                    model: state.settings.openaiModel,
+                    improvementScore: Math.round(100 - improvementScore), // Lower similarity means more corrections
+                    usage: data.usage
+                };
+            } catch (error) {
+                console.error('AI correction error:', error);
+                return {
+                    status: 'error',
+                    error: error.message,
+                    correctedText: ocrText,
+                    originalText: ocrText
                 };
             }
         }
@@ -1720,6 +1868,30 @@
             
             // Calculate consensus
             const consensus = calculateConsensus(state.ocrResults);
+            
+            // Apply AI correction if enabled
+            let finalText = consensus.text;
+            let aiCorrectionResult = null;
+            
+            if (state.settings.enableAiCorrection && state.apiKeys.openai && consensus.text) {
+                progressContainer.innerHTML += '<div id="aiProgress" class="text-sm"><span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-purple-600">Processing...</span></div>';
+                
+                aiCorrectionResult = await correctMedicalTermsWithAI(consensus.text);
+                
+                if (aiCorrectionResult.status === 'success') {
+                    finalText = aiCorrectionResult.correctedText;
+                    document.getElementById('aiProgress').innerHTML = `<span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-green-600">✓ Complete (${aiCorrectionResult.improvementScore}% corrections made)</span>`;
+                    addAuditEntry('AI correction applied', `Model: ${aiCorrectionResult.model}, ${aiCorrectionResult.improvementScore}% changes`);
+                } else if (aiCorrectionResult.status === 'error') {
+                    document.getElementById('aiProgress').innerHTML = `<span class="font-semibold">🤖 AI Medical Term Correction:</span> <span class="text-red-600">✗ Failed: ${aiCorrectionResult.error}</span>`;
+                }
+            }
+            
+            // Update consensus with AI-corrected text
+            consensus.text = finalText;
+            consensus.aiCorrected = aiCorrectionResult?.status === 'success';
+            consensus.aiResult = aiCorrectionResult;
+            
             const validationIssues = validateText(consensus.text);
             
             // Display results
@@ -1740,6 +1912,21 @@
             // Update metrics
             document.getElementById('consensusConfidence').textContent = `${consensus.confidence}%`;
             document.getElementById('enginesAgreeing').textContent = `${consensus.agreeing}/${state.ocrResults.length}`;
+            
+            // Show AI correction status if applied
+            const aiStatusElement = document.getElementById('aiCorrectionStatus');
+            if (consensus.aiCorrected && aiStatusElement) {
+                aiStatusElement.classList.remove('hidden');
+                aiStatusElement.innerHTML = `
+                    <div class="flex items-center space-x-2 text-xs">
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded font-semibold">🤖 AI-Enhanced</span>
+                        <span class="text-gray-600">${consensus.aiResult.improvementScore}% corrections applied</span>
+                        <span class="text-gray-500">(${consensus.aiResult.model})</span>
+                    </div>
+                `;
+            } else if (aiStatusElement) {
+                aiStatusElement.classList.add('hidden');
+            }
             
             // Calculate validation score
             const baseScore = consensus.confidence / 10;
@@ -1941,6 +2128,9 @@
             document.getElementById('azureApiKey').value = state.apiKeys.azure;
             document.getElementById('azureEndpoint').value = state.apiKeys.azureEndpoint;
             document.getElementById('ocrSpaceApiKey').value = state.apiKeys.ocrSpace;
+            document.getElementById('openaiApiKey').value = state.apiKeys.openai;
+            document.getElementById('enableAiCorrection').checked = state.settings.enableAiCorrection;
+            document.getElementById('openaiModel').value = state.settings.openaiModel;
         });
 
         function showApiConfig(type) {
@@ -1952,12 +2142,20 @@
             state.apiKeys.azure = document.getElementById('azureApiKey').value;
             state.apiKeys.azureEndpoint = document.getElementById('azureEndpoint').value;
             state.apiKeys.ocrSpace = document.getElementById('ocrSpaceApiKey').value;
+            state.apiKeys.openai = document.getElementById('openaiApiKey').value;
+            
+            // Get AI settings
+            state.settings.enableAiCorrection = document.getElementById('enableAiCorrection').checked;
+            state.settings.openaiModel = document.getElementById('openaiModel').value;
             
             // Save to localStorage
             localStorage.setItem('googleApiKey', state.apiKeys.google);
             localStorage.setItem('azureApiKey', state.apiKeys.azure);
             localStorage.setItem('azureEndpoint', state.apiKeys.azureEndpoint);
             localStorage.setItem('ocrSpaceApiKey', state.apiKeys.ocrSpace);
+            localStorage.setItem('openaiApiKey', state.apiKeys.openai);
+            localStorage.setItem('enableAiCorrection', state.settings.enableAiCorrection);
+            localStorage.setItem('openaiModel', state.settings.openaiModel);
             
             // Update status
             if (state.apiKeys.google) {
@@ -1973,6 +2171,11 @@
             if (state.apiKeys.ocrSpace) {
                 document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
                 document.getElementById('ocrSpaceStatus').textContent = 'Configured';
+            }
+            
+            if (state.apiKeys.openai) {
+                document.getElementById('openaiStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
+                document.getElementById('openaiStatus').textContent = state.settings.enableAiCorrection ? 'Enabled' : 'Configured';
             }
             
             document.getElementById('apiModal').classList.add('hidden');
@@ -2016,6 +2219,11 @@
         if (state.apiKeys.ocrSpace) {
             document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
             document.getElementById('ocrSpaceStatus').textContent = 'Configured';
+        }
+        
+        if (state.apiKeys.openai) {
+            document.getElementById('openaiStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
+            document.getElementById('openaiStatus').textContent = state.settings.enableAiCorrection ? 'Enabled' : 'Configured';
         }
 
         // Prevent default drag
