@@ -6,6 +6,9 @@
     <title>MedReader-SL | Medical Prescription OCR</title>
     <meta name="description" content="Simple medical prescription OCR with AI-powered correction">
     
+    <!-- Content Security Policy for enhanced security -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com; font-src 'self' data:;">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
@@ -309,11 +312,24 @@
                 reader.onload = (e) => {
                     const div = document.createElement('div');
                     div.className = 'relative';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border-2 border-gray-300">
-                        <div class="mt-1 text-xs text-gray-600 truncate" title="${file.name}">${file.name}</div>
-                        <div class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-                    `;
+                    
+                    // Create elements safely without innerHTML
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-32 object-cover rounded-lg border-2 border-gray-300';
+                    
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'mt-1 text-xs text-gray-600 truncate';
+                    nameDiv.title = file.name; // Safe attribute assignment
+                    nameDiv.textContent = file.name; // Safe text content
+                    
+                    const sizeDiv = document.createElement('div');
+                    sizeDiv.className = 'text-xs text-gray-500';
+                    sizeDiv.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                    
+                    div.appendChild(img);
+                    div.appendChild(nameDiv);
+                    div.appendChild(sizeDiv);
                     imagePreview.appendChild(div);
                 };
                 reader.onerror = () => {
