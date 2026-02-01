@@ -44,6 +44,22 @@
 
     <main class="container mx-auto px-4 py-8 max-w-4xl">
 
+        <!-- Security Warning -->
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-orange-700">
+                        <strong>Security Notice:</strong> This application embeds an API key in client-side code. For personal/demo use only. Do not use in production.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Safety Notice -->
         <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
             <div class="flex">
@@ -148,8 +164,12 @@
 
     <script>
         // Configuration
+        // ⚠️ SECURITY WARNING: This API key is exposed in client-side code
+        // For production use, implement a backend proxy to securely handle API calls
+        // The key provided by the user is embedded here as requested
         const OPENAI_API_KEY = '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';
         const OPENAI_MODEL = 'gpt-3.5-turbo';
+        const MIN_TEXT_LENGTH_FOR_AI = 5; // Minimum characters for AI correction
 
         // State
         const state = {
@@ -293,7 +313,10 @@
 
         // AI correction with OpenAI
         async function correctWithAI(text) {
-            if (!text || text.trim().length < 10) {
+            if (!text || text.trim().length < MIN_TEXT_LENGTH_FOR_AI) {
+                if (text && text.trim().length > 0) {
+                    console.log('Text too short for AI correction, using original text');
+                }
                 return text;
             }
 

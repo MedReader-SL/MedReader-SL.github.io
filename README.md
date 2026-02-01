@@ -86,6 +86,19 @@ MedReader-SL/
 
 ## 🔒 Privacy & Security
 
+### ⚠️ IMPORTANT SECURITY NOTICE
+**API Key Exposure**: The OpenAI API key is embedded directly in the client-side code (`index.html`). This means:
+- Anyone who views the page source can see the API key
+- The key could be extracted and used by unauthorized parties
+- This could result in unexpected API usage charges
+- **This is NOT recommended for production use**
+
+**Recommended for production**: 
+- Implement a backend proxy server to handle OpenAI API calls securely
+- Store API keys in environment variables on the server
+- Never expose API keys in client-side code
+- Use rate limiting and authentication
+
 ### AI Processing
 The application uses OpenAI's ChatGPT API for medical term correction:
 - ❌ Images are processed locally with Tesseract OCR
@@ -97,7 +110,7 @@ The application uses OpenAI's ChatGPT API for medical term correction:
 ### Data Storage
 - No local storage or cookies used
 - No personal information stored
-- API key is embedded in the code
+- API key is embedded in the code (see security warning above)
 
 ## 🛠 Technology Stack
 
