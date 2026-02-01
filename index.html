@@ -611,6 +611,17 @@
 
     <script>
         // ===========================
+        // CONFIGURATION CONSTANTS
+        // ===========================
+        
+        const CONFIG = {
+            MEDICINE_FUZZY_MATCH_THRESHOLD: 70,  // Minimum similarity % for medicine recognition
+            SPELL_CHECK_THRESHOLD: 60,            // Minimum similarity % for spell suggestions
+            MAX_OCR_ENGINES: 3,                   // Maximum number of OCR engines supported
+            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5 // Bonus % per additional agreeing engine
+        };
+        
+        // ===========================
         // MEDICAL DICTIONARY & VALIDATION
         // ===========================
         
@@ -654,10 +665,10 @@
                 
                 // Corticosteroids
                 'prednisone', 'prednisolone', 'methylprednisolone', 'dexamethasone', 'hydrocortisone', 
-                'betamethasone', 'triamcinolone', 'budesonide',
+                'betamethasone', 'triamcinolone',
                 
                 // Other common medications
-                'levothyroxine', 'allopurinol', 'colchicine', 'hydroxychloroquine', 'methotrexate',
+                'allopurinol', 'colchicine', 'hydroxychloroquine', 'methotrexate',
                 'cyclosporine', 'tacrolimus', 'azathioprine', 'tamsulosin', 'finasteride', 'dutasteride',
                 'sildenafil', 'tadalafil', 'vitamin', 'calcium', 'iron', 'folic', 'thiamine',
                 'cyanocobalamin', 'cholecalciferol', 'ergocalciferol', 'multivitamin'
@@ -1114,7 +1125,7 @@
                     
                     MEDICAL_DICTIONARY.medications.forEach(med => {
                         const similarity = calculateSimilarity(cleanWord, med);
-                        if (similarity > bestSimilarity && similarity > 60) { // At least 60% similar
+                        if (similarity > bestSimilarity && similarity > CONFIG.SPELL_CHECK_THRESHOLD) {
                             bestSimilarity = similarity;
                             bestMatch = med;
                         }
@@ -1147,7 +1158,7 @@
                     MEDICAL_DICTIONARY.medications.forEach(med => {
                         if (word.includes(med) || med.includes(word)) {
                             const similarity = calculateSimilarity(word, med);
-                            if (similarity > 70) {
+                            if (similarity > CONFIG.MEDICINE_FUZZY_MATCH_THRESHOLD) {
                                 recognizedMeds.push({
                                     name: med,
                                     confidence: similarity,
@@ -1345,7 +1356,8 @@
             
             // Calculate overall consensus confidence
             // Weight: 50% from best engine confidence, 30% from similarity, 20% from agreement
-            const agreementBonus = (successfulResults.length - 1) * 5; // Up to 15% bonus for 4 engines
+            const maxBonus = (CONFIG.MAX_OCR_ENGINES - 1) * CONFIG.CONSENSUS_AGREEMENT_BONUS_PER_ENGINE;
+            const agreementBonus = Math.min((successfulResults.length - 1) * CONFIG.CONSENSUS_AGREEMENT_BONUS_PER_ENGINE, maxBonus);
             const similarityWeight = avgSimilarity * 0.3;
             const confidenceWeight = bestResult.confidence * 0.5;
             const finalConfidence = Math.min(99, Math.round(confidenceWeight + similarityWeight + agreementBonus));
