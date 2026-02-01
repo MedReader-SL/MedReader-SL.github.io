@@ -275,15 +275,15 @@
                 
                 document.getElementById('testOutput').innerHTML = '';
                 
-                // Run structure tests
+                // Run structure tests (updated for simplified v2.x application)
                 const structureTests = [
                     { name: 'Has Header', check: () => testDocument.querySelector('header') !== null },
                     { name: 'Has Main Content', check: () => testDocument.querySelector('main') !== null },
                     { name: 'Has Upload Zone', check: () => testDocument.getElementById('dropZone') !== null },
                     { name: 'Has Process Button', check: () => testDocument.getElementById('processBtn') !== null },
                     { name: 'Has Results Section', check: () => testDocument.getElementById('resultsSection') !== null },
-                    { name: 'Has API Config Modal', check: () => testDocument.getElementById('apiModal') !== null },
-                    { name: 'Has Verification Modal', check: () => testDocument.getElementById('verificationModal') !== null },
+                    { name: 'Has Progress Section', check: () => testDocument.getElementById('progressSection') !== null },
+                    { name: 'Has Image Preview', check: () => testDocument.getElementById('imagePreview') !== null },
                     { name: 'Has Toast Notification', check: () => testDocument.getElementById('toast') !== null },
                 ];
                 
@@ -292,21 +292,21 @@
                     displayResult('HTML Structure', test.name, result);
                 });
                 
-                // Run must-have tests
+                // Run must-have tests (updated for simplified v2.x application)
                 const mustHaveTests = [
                     { name: 'Image Upload Support', check: () => testDocument.getElementById('imageInput')?.accept?.includes('image') },
-                    { name: 'Image Preview Canvas', check: () => testDocument.getElementById('originalCanvas') !== null && testDocument.getElementById('enhancedCanvas') !== null },
-                    { name: 'OCR Processing Function', check: () => html.includes('runTesseractOCR') },
-                    { name: 'Progress Bar Element', check: () => testDocument.getElementById('overallProgress') !== null },
+                    { name: 'Image Preview Section', check: () => testDocument.getElementById('imagePreview') !== null },
+                    { name: 'OCR Processing Function', check: () => html.includes('async function runOCR') || html.includes('Tesseract.createWorker') },
+                    { name: 'Progress Bar Element', check: () => testDocument.getElementById('progressBar') !== null },
                     { name: 'Text Output Area', check: () => testDocument.getElementById('extractedText') !== null },
                     { name: 'Copy Button', check: () => testDocument.getElementById('copyBtn') !== null },
                     { name: 'Download Button', check: () => testDocument.getElementById('downloadBtn') !== null },
+                    { name: 'Clear Button', check: () => testDocument.getElementById('clearBtn') !== null },
                     { name: 'Responsive Meta Tag', check: () => testDocument.querySelector('meta[name="viewport"]') !== null },
                     { name: 'Medical Disclaimer Banner', check: () => html.includes('MEDICAL NOTICE') },
-                    { name: 'AI Correction Support', check: () => html.includes('correctMedicalTermsWithAI') },
-                    { name: 'Multi-Engine OCR', check: () => html.includes('runGoogleVisionOCR') && html.includes('runAzureOCR') && html.includes('runOCRSpaceOCR') },
-                    { name: 'Medical Dictionary', check: () => html.includes('MEDICAL_DICTIONARY') },
-                    { name: 'Image Preprocessing', check: () => html.includes('preprocessImage') },
+                    { name: 'AI Correction Support', check: () => html.includes('async function correctWithAI') || html.includes('OPENAI_API_KEY') },
+                    { name: 'Tesseract OCR Integration', check: () => html.includes('tesseract.js') || html.includes('Tesseract.createWorker') },
+                    { name: 'API Timeout Handling', check: () => html.includes('const API_TIMEOUT') || html.includes('AbortController') },
                 ];
                 
                 mustHaveTests.forEach(test => {
@@ -314,28 +314,18 @@
                     displayResult('Must-Have Features', test.name, result);
                 });
                 
-                // Run nice-to-have tests
+                // Run nice-to-have tests (updated for simplified v2.x application)
                 const niceToHaveTests = [
                     { name: 'Drag & Drop Upload', check: () => html.includes('dragover') && html.includes('drop') },
                     { name: 'Camera Capture Support', check: () => testDocument.getElementById('imageInput')?.accept === 'image/*' },
-                    { name: 'Multi-Language Selection', check: () => testDocument.getElementById('languageSelect')?.options?.length > 1 },
-                    { name: 'Confidence Threshold Slider', check: () => testDocument.getElementById('confidenceThreshold') !== null },
-                    { name: 'Medical Dictionary Check Toggle', check: () => testDocument.getElementById('dictCheck') !== null },
-                    { name: 'Dosage Validation Toggle', check: () => testDocument.getElementById('dosageCheck') !== null },
-                    { name: 'Print Function', check: () => testDocument.getElementById('printBtn') !== null },
-                    { name: 'Share Function', check: () => testDocument.getElementById('shareBtn') !== null },
                     { name: 'Word Count Display', check: () => testDocument.getElementById('wordCount') !== null },
-                    { name: 'Statistics Counter', check: () => html.includes('processedCount') || html.includes('statsCounter') },
-                    { name: 'Text Formatting Options', check: () => testDocument.getElementById('formatBtn') !== null || html.includes('formatText') },
-                    { name: 'Clear All Button', check: () => testDocument.getElementById('clearAllBtn') !== null },
-                    { name: 'Image Remove Option', check: () => html.includes('removeImage') || testDocument.querySelector('.remove-image-btn') !== null },
-                    { name: 'Info Modal', check: () => testDocument.getElementById('infoModal') !== null },
-                    { name: 'Privacy Modal', check: () => testDocument.getElementById('privacyModal') !== null },
-                    { name: 'Edit Mode Toggle', check: () => testDocument.getElementById('editMode') !== null },
-                    { name: 'Verification System', check: () => testDocument.getElementById('verifyBtn') !== null },
-                    { name: 'Audit Trail', check: () => testDocument.getElementById('auditTrail') !== null },
-                    { name: 'Structured Information Display', check: () => testDocument.getElementById('structuredInfo') !== null },
-                    { name: 'Engine Comparison Table', check: () => testDocument.getElementById('engineComparison') !== null },
+                    { name: 'Batch Processing', check: () => html.includes('multiple') || html.includes('files.length') },
+                    { name: 'File Size Validation', check: () => html.includes('MAX_FILE_SIZE') || html.includes('10MB') },
+                    { name: 'Retry Mechanism', check: () => html.includes('MAX_API_RETRIES') || html.includes('retryCount') },
+                    { name: 'Results Tabs', check: () => testDocument.getElementById('resultsTabs') !== null },
+                    { name: 'AI Correction Info Display', check: () => testDocument.getElementById('aiCorrectionInfo') !== null },
+                    { name: 'Error Handling', check: () => html.includes('try') && html.includes('catch') },
+                    { name: 'Security Notice', check: () => html.includes('Security Notice') || html.includes('SECURITY') },
                 ];
                 
                 niceToHaveTests.forEach(test => {
@@ -343,15 +333,15 @@
                     displayResult('Nice-to-Have Features', test.name, result);
                 });
                 
-                // Run UI tests
+                // Run UI tests (updated for simplified v2.x application)
                 const uiTests = [
-                    { name: 'Glass Morphism Effect', check: () => html.includes('glass-effect') },
-                    { name: 'Gradient Background', check: () => html.includes('gradient-bg') },
-                    { name: 'Fade-in Animations', check: () => html.includes('fadeIn') || html.includes('animate-fade-in') },
-                    { name: 'Toast Notification System', check: () => html.includes('showToast') },
-                    { name: 'Badge System', check: () => html.includes('badge-success') || html.includes('badge-warning') },
-                    { name: 'Mobile Responsive (Tailwind)', check: () => html.includes('md:') && html.includes('lg:') },
+                    { name: 'Glass Morphism Effect', check: () => html.includes('.glass-effect') },
+                    { name: 'Gradient Background', check: () => html.includes('.gradient-bg') },
+                    { name: 'Toast Notification System', check: () => html.includes('function showToast') },
                     { name: 'Custom Styling', check: () => testDocument.querySelector('style') !== null },
+                    { name: 'Fallback CSS Styles', check: () => html.includes('Comprehensive fallback styles') || html.includes('/* Fallback') },
+                    { name: 'Progress Animation', check: () => html.includes('transition') && html.includes('progressBar') },
+                    { name: 'Disabled State Styling', check: () => html.includes(':disabled') || html.includes('button:disabled') },
                 ];
                 
                 uiTests.forEach(test => {
