@@ -9,13 +9,15 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        medical: { 50: '#f0f9ff', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
-                        health: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a' },
-                        warning: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c' }
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            medical: { 50: '#f0f9ff', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                            health: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a' },
+                            warning: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c' }
+                        }
                     }
                 }
             }
@@ -32,6 +34,51 @@
         .badge-critical { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
         .badge-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .badge-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        
+        /* Fallback styles when Tailwind CSS fails to load */
+        .hidden { display: none !important; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
+        .min-h-screen { min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; line-height: 1.5; }
+        
+        /* SVG icon sizing fallbacks */
+        svg { max-width: 100%; height: auto; }
+        header svg, main svg { width: 24px; height: 24px; }
+        #dropZone svg { width: 64px; height: 64px; margin: 0 auto 12px; display: block; }
+        
+        /* Layout fallbacks */
+        header { position: sticky; top: 0; z-index: 50; padding: 1rem; }
+        main { padding: 2rem 1rem; }
+        #dropZone { border: 2px dashed #0ea5e9; border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
+        #dropZone:hover { background-color: #f0f9ff; }
+        .glass-effect { padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* Button fallbacks */
+        button { cursor: pointer; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600; background-color: #e5e7eb; }
+        #processBtn { background: linear-gradient(to right, #0ea5e9, #22c55e); color: white; width: 100%; margin-top: 1rem; }
+        #saveApiConfig, #confirmVerification { background-color: #0ea5e9; color: white; }
+        #copyBtn { background-color: #22c55e; color: white; }
+        #downloadBtn { background-color: #8b5cf6; color: white; }
+        #verifyBtn { background-color: #16a34a; color: white; }
+        
+        /* Grid fallback */
+        @media (min-width: 1024px) {
+            main > .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
+        }
+        
+        /* Modal fallback */
+        #apiModal, #verificationModal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
+        #apiModal.hidden, #verificationModal.hidden { display: none !important; }
+        #apiModal > div, #verificationModal > div { max-width: 32rem; width: 100%; background: white; padding: 2rem; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
+        
+        /* Toast fallback */
+        #toast { position: fixed; bottom: 2rem; right: 2rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 100; }
+        #toast.hidden { display: none !important; }
+        
+        /* Form element fallbacks */
+        input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; margin-top: 0.25rem; }
+        input[type="range"] { width: 100%; }
+        input[type="checkbox"] { width: 16px; height: 16px; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -590,6 +637,15 @@
         // ===========================
         
         async function runTesseractOCR(image, onProgress) {
+            if (typeof Tesseract === 'undefined') {
+                return {
+                    engine: 'Tesseract.js',
+                    text: '',
+                    confidence: 0,
+                    status: 'error',
+                    error: 'Tesseract.js library not loaded. Please check your internet connection and refresh the page.'
+                };
+            }
             try {
                 const { data: { text, confidence } } = await Tesseract.recognize(
                     image,
