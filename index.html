@@ -179,8 +179,22 @@
                     <button onclick="showApiConfig('azure')" class="mt-2 text-xs text-medical-600 hover:text-medical-700 font-medium">Configure</button>
                 </div>
             </div>
+            
+            <!-- OCR.space Free API Section -->
+            <div class="mt-4 border border-green-200 rounded-lg p-4 bg-green-50">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-semibold text-gray-700">OCR.space</span>
+                        <span class="px-2 py-0.5 bg-green-600 text-white text-xs rounded">FREE</span>
+                    </div>
+                    <span id="ocrSpaceStatus" class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Not Configured</span>
+                </div>
+                <p class="text-xs text-gray-500 mb-2">Cloud API • Free tier • Good handwriting support • Recommended fallback</p>
+                <button onclick="showApiConfig('ocrspace')" class="text-xs text-medical-600 hover:text-medical-700 font-medium">Configure Free API Key →</button>
+            </div>
+            
             <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                <strong>💡 Pro Tip:</strong> Configure multiple engines for consensus validation. Results are compared across engines to maximize accuracy.
+                <strong>💡 Pro Tip:</strong> Configure OCR.space (free) as a fallback engine for improved accuracy without cost. Results are compared across engines to maximize accuracy.
             </div>
         </div>
 
@@ -533,6 +547,36 @@
                     </div>
                 </div>
 
+                <!-- OCR.space Free API -->
+                <div class="border border-green-300 rounded-lg p-4 bg-green-50">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <h3 class="font-semibold text-gray-800">OCR.space API</h3>
+                        <span class="px-2 py-0.5 bg-green-600 text-white text-xs rounded font-semibold">FREE</span>
+                        <span class="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-semibold">RECOMMENDED</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-1">API Key</label>
+                            <input type="password" id="ocrSpaceApiKey" class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Enter your free OCR.space API key">
+                        </div>
+                        <div class="bg-white border border-green-200 rounded-lg p-3">
+                            <p class="text-xs text-gray-700 mb-2">
+                                <strong>✓ Free Features:</strong>
+                            </p>
+                            <ul class="text-xs text-gray-600 space-y-1 ml-4 list-disc">
+                                <li>25,000 requests/month free</li>
+                                <li>Better handwriting recognition than Tesseract</li>
+                                <li>OCR Engine 2 optimized for documents</li>
+                                <li>Auto-rotation and scaling</li>
+                            </ul>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            Get your FREE API key from <a href="https://ocr.space/ocrapi/freekey" target="_blank" class="text-medical-600 hover:underline font-semibold">ocr.space/ocrapi/freekey</a>.
+                            No credit card required!
+                        </p>
+                    </div>
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
                     <p class="text-blue-800">
                         <strong>Privacy Note:</strong> When using cloud APIs, images are sent to external servers for processing. 
@@ -617,8 +661,17 @@
         const CONFIG = {
             MEDICINE_FUZZY_MATCH_THRESHOLD: 70,  // Minimum similarity % for medicine recognition
             SPELL_CHECK_THRESHOLD: 60,            // Minimum similarity % for spell suggestions
-            MAX_OCR_ENGINES: 3,                   // Maximum number of OCR engines supported
-            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5 // Bonus % per additional agreeing engine
+            MAX_OCR_ENGINES: 4,                   // Maximum number of OCR engines supported (Tesseract, OCR.space, Google, Azure)
+            CONSENSUS_AGREEMENT_BONUS_PER_ENGINE: 5, // Bonus % per additional agreeing engine
+            
+            // OCR.space API configuration
+            OCRSPACE_BASE_CONFIDENCE: 85,         // Base confidence for OCR.space results
+            OCRSPACE_SUCCESS_CONFIDENCE: 90,      // Confidence for successful parse (exit code 1)
+            OCRSPACE_PARTIAL_CONFIDENCE: 75,      // Confidence for partial success (exit code 0)
+            OCRSPACE_TEXT_LENGTH_THRESHOLD: 50,   // Minimum text length for confidence boost
+            OCRSPACE_TEXT_LENGTH_BONUS: 5,        // Confidence bonus for meaningful text
+            OCRSPACE_MAX_CONFIDENCE: 95,          // Maximum confidence cap
+            OCRSPACE_JPEG_QUALITY: 0.95           // JPEG quality for image conversion
         };
         
         // ===========================
@@ -698,7 +751,8 @@
             apiKeys: {
                 google: localStorage.getItem('googleApiKey') || '',
                 azure: localStorage.getItem('azureApiKey') || '',
-                azureEndpoint: localStorage.getItem('azureEndpoint') || ''
+                azureEndpoint: localStorage.getItem('azureEndpoint') || '',
+                ocrSpace: localStorage.getItem('ocrSpaceApiKey') || ''
             },
             settings: {
                 confidenceThreshold: 80,
@@ -1046,6 +1100,114 @@
                 return {engine: 'Azure OCR', status: 'error', error: 'Processing failed'};
             } catch (error) {
                 return {engine: 'Azure OCR', status: 'error', error: error.message};
+            }
+        }
+
+        // OCR.space API - Free and recommended for better handwriting support
+        async function runOCRSpaceOCR(image) {
+            if (!state.apiKeys.ocrSpace) {
+                return {engine: 'OCR.space', status: 'not_configured'};
+            }
+            
+            try {
+                // Convert canvas to base64 with specified quality for OCR accuracy
+                const base64Image = image.toDataURL('image/jpeg', CONFIG.OCRSPACE_JPEG_QUALITY);
+                
+                // Map language codes to OCR.space language codes
+                const langMap = {
+                    'eng': 'eng',
+                    'fra': 'fre',
+                    'spa': 'spa',
+                    'deu': 'ger',
+                    'ita': 'ita',
+                    'por': 'por',
+                    'ara': 'ara',
+                    'chi_sim': 'chs',
+                    'hin': 'hin',
+                    'eng+fra': 'eng',
+                    'eng+spa': 'eng',
+                    'eng+deu': 'eng',
+                    'eng+ita': 'eng',
+                    'eng+por': 'eng',
+                    'eng+ara': 'eng',
+                    'eng+chi_sim': 'eng',
+                    'eng+hin': 'eng'
+                };
+                
+                const ocrSpaceLang = langMap[state.settings.language] || 'eng';
+                
+                // Create form data for OCR.space API
+                const formData = new FormData();
+                formData.append('base64Image', base64Image);
+                formData.append('language', ocrSpaceLang);
+                formData.append('isOverlayRequired', 'false');
+                formData.append('detectOrientation', 'true');
+                formData.append('scale', 'true');
+                formData.append('OCREngine', '2'); // Engine 2 is better for documents and handwriting
+                formData.append('filetype', 'JPG');
+                
+                const response = await fetch('https://api.ocr.space/parse/image', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': state.apiKeys.ocrSpace
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.IsErroredOnProcessing) {
+                    return {
+                        engine: 'OCR.space',
+                        text: '',
+                        confidence: 0,
+                        status: 'error',
+                        error: data.ErrorMessage || 'Processing failed'
+                    };
+                }
+                
+                if (data.ParsedResults && data.ParsedResults.length > 0) {
+                    const result = data.ParsedResults[0];
+                    const text = result.ParsedText || '';
+                    
+                    // Calculate confidence based on exit code and text length
+                    let confidence = CONFIG.OCRSPACE_BASE_CONFIDENCE;
+                    
+                    // Adjust confidence based on exit code
+                    if (result.FileParseExitCode === 1) {
+                        confidence = CONFIG.OCRSPACE_SUCCESS_CONFIDENCE;
+                    } else if (result.FileParseExitCode === 0) {
+                        confidence = CONFIG.OCRSPACE_PARTIAL_CONFIDENCE;
+                    }
+                    
+                    // Boost confidence if meaningful text was extracted
+                    if (text.length > CONFIG.OCRSPACE_TEXT_LENGTH_THRESHOLD) {
+                        confidence = Math.min(CONFIG.OCRSPACE_MAX_CONFIDENCE, confidence + CONFIG.OCRSPACE_TEXT_LENGTH_BONUS);
+                    }
+                    
+                    return {
+                        engine: 'OCR.space',
+                        text: text.trim(),
+                        confidence: confidence,
+                        status: 'success'
+                    };
+                }
+                
+                return {
+                    engine: 'OCR.space',
+                    text: '',
+                    confidence: 0,
+                    status: 'error',
+                    error: 'No text detected'
+                };
+            } catch (error) {
+                return {
+                    engine: 'OCR.space',
+                    text: '',
+                    confidence: 0,
+                    status: 'error',
+                    error: error.message
+                };
             }
         }
 
@@ -1508,21 +1670,41 @@
             // Run OCR engines
             state.ocrResults = [];
             
-            // Tesseract
+            // Count configured engines to calculate progress correctly
+            let totalEngines = 1; // Tesseract is always run
+            if (state.apiKeys.ocrSpace) totalEngines++;
+            if (state.apiKeys.google) totalEngines++;
+            if (state.apiKeys.azure && state.apiKeys.azureEndpoint) totalEngines++;
+            let completedEngines = 0;
+            
+            // Tesseract (Primary - always runs)
             progressContainer.innerHTML += '<div id="tesseractProgress" class="text-sm"><span class="font-semibold">Tesseract.js:</span> <span class="text-gray-600">Processing...</span></div>';
             const tesseractResult = await runTesseractOCR(state.processedImage, progress => {
-                document.getElementById('overallProgress').style.width = `${progress/3}%`;
+                document.getElementById('overallProgress').style.width = `${(completedEngines + progress/100) / totalEngines * 100}%`;
             });
             state.ocrResults.push(tesseractResult);
-            document.getElementById('tesseractProgress').innerHTML = `<span class="font-semibold">Tesseract.js:</span> <span class="text-green-600">✓ Complete (${tesseractResult.confidence}%)</span>`;
+            completedEngines++;
+            document.getElementById('tesseractProgress').innerHTML = `<span class="font-semibold">Tesseract.js:</span> <span class="${tesseractResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${tesseractResult.status === 'success' ? `✓ Complete (${tesseractResult.confidence}%)` : '✗ Failed'}</span>`;
+            document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
+            
+            // OCR.space (Recommended free fallback - runs if configured)
+            if (state.apiKeys.ocrSpace) {
+                progressContainer.innerHTML += '<div id="ocrSpaceProgress" class="text-sm"><span class="font-semibold">OCR.space:</span> <span class="text-gray-600">Processing...</span></div>';
+                const ocrSpaceResult = await runOCRSpaceOCR(state.processedImage);
+                state.ocrResults.push(ocrSpaceResult);
+                completedEngines++;
+                document.getElementById('ocrSpaceProgress').innerHTML = `<span class="font-semibold">OCR.space:</span> <span class="${ocrSpaceResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${ocrSpaceResult.status === 'success' ? `✓ Complete (${ocrSpaceResult.confidence}%)` : '✗ Failed'}</span>`;
+                document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
+            }
             
             // Google Vision (if configured)
             if (state.apiKeys.google) {
                 progressContainer.innerHTML += '<div id="googleProgress" class="text-sm"><span class="font-semibold">Google Vision:</span> <span class="text-gray-600">Processing...</span></div>';
                 const googleResult = await runGoogleVisionOCR(state.processedImage);
                 state.ocrResults.push(googleResult);
+                completedEngines++;
                 document.getElementById('googleProgress').innerHTML = `<span class="font-semibold">Google Vision:</span> <span class="${googleResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${googleResult.status === 'success' ? '✓ Complete' : '✗ Failed'}</span>`;
-                document.getElementById('overallProgress').style.width = '66%';
+                document.getElementById('overallProgress').style.width = `${completedEngines / totalEngines * 100}%`;
             }
             
             // Azure (if configured)
@@ -1530,6 +1712,7 @@
                 progressContainer.innerHTML += '<div id="azureProgress" class="text-sm"><span class="font-semibold">Azure OCR:</span> <span class="text-gray-600">Processing...</span></div>';
                 const azureResult = await runAzureOCR(state.processedImage);
                 state.ocrResults.push(azureResult);
+                completedEngines++;
                 document.getElementById('azureProgress').innerHTML = `<span class="font-semibold">Azure OCR:</span> <span class="${azureResult.status === 'success' ? 'text-green-600' : 'text-red-600'}">${azureResult.status === 'success' ? '✓ Complete' : '✗ Failed'}</span>`;
             }
             
@@ -1757,6 +1940,7 @@
             document.getElementById('googleApiKey').value = state.apiKeys.google;
             document.getElementById('azureApiKey').value = state.apiKeys.azure;
             document.getElementById('azureEndpoint').value = state.apiKeys.azureEndpoint;
+            document.getElementById('ocrSpaceApiKey').value = state.apiKeys.ocrSpace;
         });
 
         function showApiConfig(type) {
@@ -1767,11 +1951,13 @@
             state.apiKeys.google = document.getElementById('googleApiKey').value;
             state.apiKeys.azure = document.getElementById('azureApiKey').value;
             state.apiKeys.azureEndpoint = document.getElementById('azureEndpoint').value;
+            state.apiKeys.ocrSpace = document.getElementById('ocrSpaceApiKey').value;
             
             // Save to localStorage
             localStorage.setItem('googleApiKey', state.apiKeys.google);
             localStorage.setItem('azureApiKey', state.apiKeys.azure);
             localStorage.setItem('azureEndpoint', state.apiKeys.azureEndpoint);
+            localStorage.setItem('ocrSpaceApiKey', state.apiKeys.ocrSpace);
             
             // Update status
             if (state.apiKeys.google) {
@@ -1782,6 +1968,11 @@
             if (state.apiKeys.azure && state.apiKeys.azureEndpoint) {
                 document.getElementById('azureStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
                 document.getElementById('azureStatus').textContent = 'Configured';
+            }
+            
+            if (state.apiKeys.ocrSpace) {
+                document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
+                document.getElementById('ocrSpaceStatus').textContent = 'Configured';
             }
             
             document.getElementById('apiModal').classList.add('hidden');
@@ -1820,6 +2011,11 @@
         if (state.apiKeys.azure && state.apiKeys.azureEndpoint) {
             document.getElementById('azureStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
             document.getElementById('azureStatus').textContent = 'Configured';
+        }
+        
+        if (state.apiKeys.ocrSpace) {
+            document.getElementById('ocrSpaceStatus').className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full';
+            document.getElementById('ocrSpaceStatus').textContent = 'Configured';
         }
 
         // Prevent default drag
