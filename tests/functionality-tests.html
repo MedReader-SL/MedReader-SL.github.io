@@ -296,7 +296,7 @@
                 const mustHaveTests = [
                     { name: 'Image Upload Support', check: () => testDocument.getElementById('imageInput')?.accept?.includes('image') },
                     { name: 'Image Preview Section', check: () => testDocument.getElementById('imagePreview') !== null },
-                    { name: 'OCR Processing Function', check: () => html.includes('runOCR') || html.includes('Tesseract') },
+                    { name: 'OCR Processing Function', check: () => html.includes('async function runOCR') || html.includes('Tesseract.createWorker') },
                     { name: 'Progress Bar Element', check: () => testDocument.getElementById('progressBar') !== null },
                     { name: 'Text Output Area', check: () => testDocument.getElementById('extractedText') !== null },
                     { name: 'Copy Button', check: () => testDocument.getElementById('copyBtn') !== null },
@@ -304,9 +304,9 @@
                     { name: 'Clear Button', check: () => testDocument.getElementById('clearBtn') !== null },
                     { name: 'Responsive Meta Tag', check: () => testDocument.querySelector('meta[name="viewport"]') !== null },
                     { name: 'Medical Disclaimer Banner', check: () => html.includes('MEDICAL NOTICE') },
-                    { name: 'AI Correction Support', check: () => html.includes('correctWithAI') || html.includes('OpenAI') || html.includes('OPENAI_API_KEY') },
-                    { name: 'Tesseract OCR Integration', check: () => html.includes('tesseract') || html.includes('Tesseract') },
-                    { name: 'API Timeout Handling', check: () => html.includes('API_TIMEOUT') || html.includes('timeout') },
+                    { name: 'AI Correction Support', check: () => html.includes('async function correctWithAI') || html.includes('OPENAI_API_KEY') },
+                    { name: 'Tesseract OCR Integration', check: () => html.includes('tesseract.js') || html.includes('Tesseract.createWorker') },
+                    { name: 'API Timeout Handling', check: () => html.includes('const API_TIMEOUT') || html.includes('AbortController') },
                 ];
                 
                 mustHaveTests.forEach(test => {
@@ -335,13 +335,13 @@
                 
                 // Run UI tests (updated for simplified v2.x application)
                 const uiTests = [
-                    { name: 'Glass Morphism Effect', check: () => html.includes('glass-effect') },
-                    { name: 'Gradient Background', check: () => html.includes('gradient-bg') },
-                    { name: 'Toast Notification System', check: () => html.includes('showToast') },
+                    { name: 'Glass Morphism Effect', check: () => html.includes('.glass-effect') },
+                    { name: 'Gradient Background', check: () => html.includes('.gradient-bg') },
+                    { name: 'Toast Notification System', check: () => html.includes('function showToast') },
                     { name: 'Custom Styling', check: () => testDocument.querySelector('style') !== null },
-                    { name: 'Fallback CSS Styles', check: () => html.includes('fallback') || html.includes('Fallback') || (html.includes('body {') && html.includes('button {')) },
-                    { name: 'Progress Animation', check: () => html.includes('transition') },
-                    { name: 'Disabled State Styling', check: () => html.includes('disabled') },
+                    { name: 'Fallback CSS Styles', check: () => html.includes('Comprehensive fallback styles') || html.includes('/* Fallback') },
+                    { name: 'Progress Animation', check: () => html.includes('transition') && html.includes('progressBar') },
+                    { name: 'Disabled State Styling', check: () => html.includes(':disabled') || html.includes('button:disabled') },
                 ];
                 
                 uiTests.forEach(test => {
