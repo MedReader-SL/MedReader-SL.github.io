@@ -531,9 +531,10 @@
                     });
                 } catch (error) {
                     console.error('Error processing file:', error);
+                    const errorMessage = error && error.message ? error.message : 'Unknown error occurred';
                     state.results.push({
                         filename: file.name,
-                        text: `Error processing image: ${error.message}\n\nPlease try again or use a different image.`,
+                        text: `Error processing image: ${errorMessage}\n\nPlease try again or use a different image.`,
                         aiCorrected: false,
                         isError: true
                     });
@@ -580,7 +581,8 @@
 
                 return extractedText;
             } catch (error) {
-                throw new Error(`OCR failed: ${error.message}`);
+                const errorMessage = error && error.message ? error.message : 'Unknown error occurred';
+                throw new Error(`OCR failed: ${errorMessage}`);
             }
         }
 
@@ -666,7 +668,7 @@
                 console.error('AI correction failed:', error);
                 
                 // Retry on network errors
-                if (retryCount < MAX_API_RETRIES && error.name === 'AbortError') {
+                if (retryCount < MAX_API_RETRIES && error && error.name === 'AbortError') {
                     console.log(`Retrying AI correction after timeout (attempt ${retryCount + 1})...`);
                     await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
                     return correctWithAI(text, retryCount + 1);
